@@ -248,6 +248,7 @@ function useSettingsIndexSections(): SettingsListSection[] {
           ? [
               page("SettingsKeyboard", "keyboard", "Keyboard"),
               page("SettingsMicrophone", "mic", "Microphone"),
+              page("SettingsDrivingMode", "car", "Car mode"),
             ]
           : []),
       ],

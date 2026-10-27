@@ -1,5 +1,6 @@
 import { useWorkspaceSidebarHeaderItem } from "../layout/useWorkspaceSidebarHeaderItem";
-import { StackActions, useNavigation } from "@react-navigation/native";
+import { CommonActions, StackActions, useNavigation } from "@react-navigation/native";
+import { Platform } from "react-native";
 import { useMemo } from "react";
 import { threadHeaderAppearance } from "./thread-header-appearance";
 import { isDuoDevice } from "../../lib/device-type";
@@ -95,8 +96,29 @@ export function useThreadHeaderOptions(props: {
         ? undefined
         : () => compactHomeHeaderItems,
     // The workspace navigator adds compose to the Duo detail column's bar.
-    unstable_headerRightItems: () =>
-      usesDuoHeader || layout.usesSplitView ? threadCenterHeaderItems : compactRightHeaderItems,
+    unstable_headerRightItems: () => [
+      ...(usesDuoHeader || layout.usesSplitView
+        ? threadCenterHeaderItems
+        : compactRightHeaderItems),
+      ...(Platform.OS === "ios" && !props.draft
+        ? [
+            withNativeGlassHeaderItem({
+              type: "button" as const,
+              identifier: "thread-car-mode",
+              label: "Car mode",
+              accessibilityLabel: "Open car mode",
+              icon: { name: "car", type: "sfSymbol" as const },
+              onPress: () =>
+                navigation.dispatch(
+                  CommonActions.navigate("SettingsDrivingMode", {
+                    environmentId: String(props.gitControls.environmentId),
+                    threadId: String(props.gitControls.threadId),
+                  }),
+                ),
+            }),
+          ]
+        : []),
+    ],
     unstable_headerToolbarItems: () => [],
     unstable_headerSubtitle: props.usesNativeHeaderGlass ? props.subtitle : undefined,
     contentStyle: undefined,

@@ -117,6 +117,7 @@ import {
 import { SettingsKeyboardRouteScreen } from "./features/settings/SettingsKeyboardRouteScreen";
 import { SettingsLegalRouteScreen } from "./features/settings/SettingsLegalRouteScreen";
 import { SettingsMicrophoneRouteScreen } from "./features/settings/SettingsMicrophoneRouteScreen";
+import { DrivingModeScreen } from "./features/driving-mode/DrivingModeScreen";
 import {
   SettingsOpenSourceLicenseRouteScreen,
   SettingsOpenSourceLicensesRouteScreen,
@@ -371,6 +372,11 @@ const SETTINGS_SCREENS = {
       ...SETTINGS_PAGE_OPTIONS,
       title: "Microphone",
     },
+  }),
+  SettingsDrivingMode: createNativeStackScreen({
+    screen: DrivingModeScreen,
+    linking: "settings/car-mode/:environmentId?/:threadId?",
+    options: { ...SETTINGS_PAGE_OPTIONS, headerTransparent: false, title: "Car mode" },
   }),
   SettingsFollowUp: createNativeStackScreen({
     screen: SettingsFollowUpRouteScreen,

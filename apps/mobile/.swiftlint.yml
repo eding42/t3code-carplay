@@ -5,6 +5,7 @@ included:
   - modules/t3-native-controls/ios
   - modules/t3-terminal/ios
   - modules/t3-review-diff/ios
+  - modules/t3-voice/ios
 
 excluded:
   - ios/Pods
@@ -58,4 +59,3 @@ opt_in_rules:
   - toggle_bool
   - unneeded_parentheses_in_closure_argument
   - vertical_parameter_alignment_on_call
-  - yoda_condition
