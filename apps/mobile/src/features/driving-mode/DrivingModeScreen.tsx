@@ -39,78 +39,78 @@ const THEME_BY_PHASE: Record<
     glowStart: string;
     glowMid: string;
     accent: string;
-    accentGradient: string;
+    border: string;
     icon: AppSymbolName;
   }
 > = {
   paused: {
     badge: "READY",
     title: "Tap to Speak",
-    subtitle: "Hands-free voice mode is on standby",
-    glowStart: "rgba(148, 163, 184, 0.22)",
-    glowMid: "rgba(51, 65, 85, 0.08)",
-    accent: "#94A3B8",
-    accentGradient: "#64748B",
+    subtitle: "Hands-free voice assistant on standby",
+    glowStart: "rgba(212, 163, 115, 0.12)",
+    glowMid: "rgba(212, 163, 115, 0.03)",
+    accent: "#D4A373",
+    border: "rgba(212, 163, 115, 0.25)",
     icon: "mic",
   },
   preparing: {
     badge: "INITIALIZING",
     title: "Starting Up…",
     subtitle: "Configuring on-device audio engine",
-    glowStart: "rgba(56, 189, 248, 0.32)",
-    glowMid: "rgba(2, 132, 199, 0.12)",
-    accent: "#38BDF8",
-    accentGradient: "#0284C7",
+    glowStart: "rgba(229, 169, 103, 0.16)",
+    glowMid: "rgba(229, 169, 103, 0.04)",
+    accent: "#E5A967",
+    border: "rgba(229, 169, 103, 0.3)",
     icon: "headphones",
   },
   listening: {
     badge: "LISTENING",
     title: "Listening…",
     subtitle: "Speak naturally · 2s pause auto-sends",
-    glowStart: "rgba(14, 165, 233, 0.42)",
-    glowMid: "rgba(3, 105, 161, 0.16)",
-    accent: "#00F2FE",
-    accentGradient: "#0284C7",
+    glowStart: "rgba(229, 169, 103, 0.22)",
+    glowMid: "rgba(229, 169, 103, 0.05)",
+    accent: "#E5A967",
+    border: "rgba(229, 169, 103, 0.4)",
     icon: "mic",
   },
   sending: {
-    badge: "SENDING",
+    badge: "DELIVERING",
     title: "Delivering…",
     subtitle: "Transmitting prompt to agent",
-    glowStart: "rgba(192, 132, 252, 0.38)",
-    glowMid: "rgba(126, 34, 206, 0.15)",
-    accent: "#C084FC",
-    accentGradient: "#7E22CE",
+    glowStart: "rgba(203, 187, 173, 0.18)",
+    glowMid: "rgba(203, 187, 173, 0.04)",
+    accent: "#CBBBAD",
+    border: "rgba(203, 187, 173, 0.3)",
     icon: "arrow.up",
   },
   waiting: {
     badge: "THINKING",
     title: "Thinking…",
-    subtitle: "Inspecting codebase & running tools",
-    glowStart: "rgba(129, 140, 248, 0.36)",
-    glowMid: "rgba(67, 56, 202, 0.14)",
-    accent: "#818CF8",
-    accentGradient: "#4338CA",
+    subtitle: "Reviewing workspace & running tools",
+    glowStart: "rgba(212, 163, 115, 0.20)",
+    glowMid: "rgba(212, 163, 115, 0.04)",
+    accent: "#D4A373",
+    border: "rgba(212, 163, 115, 0.35)",
     icon: "brain",
   },
   speaking: {
     badge: "SPEAKING",
     title: "Speaking…",
-    subtitle: "Streaming response through vehicle audio",
-    glowStart: "rgba(52, 211, 153, 0.4)",
-    glowMid: "rgba(4, 120, 87, 0.16)",
-    accent: "#34D399",
-    accentGradient: "#047857",
+    subtitle: "Streaming response through car audio",
+    glowStart: "rgba(168, 197, 168, 0.20)",
+    glowMid: "rgba(168, 197, 168, 0.04)",
+    accent: "#A8C5A8",
+    border: "rgba(168, 197, 168, 0.35)",
     icon: "headphones",
   },
   error: {
     badge: "PAUSED",
     title: "Attention Needed",
-    subtitle: "Safely review details when parked",
-    glowStart: "rgba(248, 113, 113, 0.32)",
-    glowMid: "rgba(185, 28, 28, 0.12)",
+    subtitle: "Review details safely when parked",
+    glowStart: "rgba(244, 114, 114, 0.16)",
+    glowMid: "rgba(244, 114, 114, 0.03)",
     accent: "#F87171",
-    accentGradient: "#B91C1C",
+    border: "rgba(244, 114, 114, 0.3)",
     icon: "exclamationmark.triangle",
   },
 };
@@ -153,9 +153,12 @@ export function DrivingModeScreen({
 
   if (Platform.OS !== "ios") {
     return (
-      <View className="flex-1 items-center justify-center bg-black p-8">
+      <View
+        className="flex-1 items-center justify-center p-8"
+        style={{ backgroundColor: "#0A0A0C" }}
+      >
         <SymbolView name="iphone" size={48} tintColor="#71717A" />
-        <Text className="mt-4 text-center text-lg font-t3-bold text-white">iPhone Only</Text>
+        <Text className="mt-4 text-center text-lg font-t3-bold text-[#F4F4F6]">iPhone Only</Text>
         <Text className="mt-2 text-center text-zinc-400">
           Car mode hands-free voice chat is available on iPhone.
         </Text>
@@ -186,14 +189,14 @@ function ConversationPicker() {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   return (
-    <View className="flex-1 bg-black">
-      {/* Top Ambient Glow */}
+    <View className="flex-1" style={{ backgroundColor: "#0A0A0C" }}>
+      {/* Top Ambient Warmth */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <Svg height="100%" width="100%">
           <Defs>
-            <RadialGradient id="picker-aura" cx="50%" cy="15%" r="65%">
-              <Stop offset="0%" stopColor="rgba(14, 165, 233, 0.22)" stopOpacity="1" />
-              <Stop offset="50%" stopColor="rgba(2, 132, 199, 0.06)" stopOpacity="1" />
+            <RadialGradient id="picker-aura" cx="50%" cy="12%" r="65%">
+              <Stop offset="0%" stopColor="rgba(212, 163, 115, 0.12)" stopOpacity="1" />
+              <Stop offset="50%" stopColor="rgba(212, 163, 115, 0.02)" stopOpacity="1" />
               <Stop offset="100%" stopColor="transparent" stopOpacity="0" />
             </RadialGradient>
           </Defs>
@@ -203,7 +206,7 @@ function ConversationPicker() {
 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerClassName="px-5 py-6 gap-6"
+        contentContainerClassName="px-5 py-5 gap-6"
         style={{
           paddingTop: Math.max(insets.top, 16),
           paddingBottom: Math.max(insets.bottom, 24),
@@ -218,58 +221,98 @@ function ConversationPicker() {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               navigation.goBack();
             }}
-            className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] border border-white/15 active:bg-white/[0.18]"
+            className="h-10 w-10 items-center justify-center rounded-full active:opacity-75"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.04)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.08)",
+            }}
           >
-            <SymbolView name="chevron.left" size={16} tintColor="#E2E8F0" />
+            <SymbolView name="chevron.left" size={15} tintColor="#D4D4D8" />
           </Pressable>
         </View>
 
-        {/* Luxury Cockpit Hero */}
+        {/* Clean Editorial Hero */}
         <View className="items-center pt-2 pb-2">
-          <View className="h-20 w-20 items-center justify-center rounded-3xl bg-blue-500/10 border border-blue-400/25 mb-4 shadow-xl shadow-blue-500/25">
-            <SymbolView name="car" size={38} tintColor="#38BDF8" />
+          <View
+            className="h-16 w-16 items-center justify-center rounded-2xl mb-4"
+            style={{
+              backgroundColor: "rgba(212, 163, 115, 0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(212, 163, 115, 0.2)",
+            }}
+          >
+            <SymbolView name="car" size={32} tintColor="#D4A373" />
           </View>
-          <Text className="text-3xl font-t3-bold text-white tracking-tight">Car Mode</Text>
-          <Text className="mt-2 text-center text-sm font-t3-medium text-zinc-300 max-w-xs leading-5">
+          <Text className="text-2xl font-t3-bold tracking-tight text-[#F4F4F6]">Car Mode</Text>
+          <Text className="mt-2 text-center text-sm font-t3-normal text-zinc-400 max-w-xs leading-6">
             Hands-free voice assistant built for driving. Continuous conversational coding with
             automatic pause detection.
           </Text>
 
           {/* Feature Badges */}
           <View className="mt-5 flex-row items-center gap-2">
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
-              <SymbolView name="sparkles" size={12} tintColor="#38BDF8" />
-              <Text className="text-[11px] font-t3-bold text-sky-300">Zero Touch</Text>
+            <View
+              className="flex-row items-center gap-1.5 rounded-full px-3 py-1"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <SymbolView name="sparkles" size={11} tintColor="#D4A373" />
+              <Text className="text-[11px] font-t3-medium text-zinc-300">Zero Touch</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
-              <SymbolView name="headphones" size={12} tintColor="#34D399" />
-              <Text className="text-[11px] font-t3-bold text-emerald-300">Car Audio</Text>
+            <View
+              className="flex-row items-center gap-1.5 rounded-full px-3 py-1"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <SymbolView name="headphones" size={11} tintColor="#A8C5A8" />
+              <Text className="text-[11px] font-t3-medium text-zinc-300">Car Audio</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
-              <SymbolView name="info.circle" size={12} tintColor="#CBD5E1" />
-              <Text className="text-[11px] font-t3-bold text-zinc-200">On-Device</Text>
+            <View
+              className="flex-row items-center gap-1.5 rounded-full px-3 py-1"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <SymbolView name="info.circle" size={11} tintColor="#A1A1AA" />
+              <Text className="text-[11px] font-t3-medium text-zinc-400">On-Device</Text>
             </View>
           </View>
         </View>
 
         {/* Threads List */}
-        <View className="gap-3">
+        <View className="gap-2.5">
           <View className="flex-row items-center justify-between px-1">
-            <Text className="text-xs font-t3-bold uppercase tracking-widest text-zinc-400">
+            <Text className="text-xs font-t3-bold uppercase tracking-widest text-zinc-500">
               Select Conversation
             </Text>
-            <Text className="text-xs font-t3-medium text-zinc-500">
+            <Text className="text-xs font-t3-normal text-zinc-500">
               {conversations.length} {conversations.length === 1 ? "thread" : "threads"}
             </Text>
           </View>
 
           {conversations.length === 0 ? (
-            <View className="items-center justify-center rounded-3xl border border-dashed border-zinc-800 py-16 px-6">
-              <SymbolView name="bubble.left.and.bubble.right" size={36} tintColor="#71717A" />
-              <Text className="mt-3 text-center text-base font-t3-bold text-zinc-200">
+            <View
+              className="items-center justify-center rounded-2xl py-14 px-6"
+              style={{
+                borderWidth: 1,
+                borderStyle: "dashed",
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <SymbolView name="bubble.left.and.bubble.right" size={32} tintColor="#52525B" />
+              <Text className="mt-3 text-center text-sm font-t3-medium text-zinc-300">
                 No active conversations
               </Text>
-              <Text className="mt-1 text-center text-xs text-zinc-400">
+              <Text className="mt-1 text-center text-xs text-zinc-500">
                 Start a thread with your T3 server to begin voice mode.
               </Text>
             </View>
@@ -289,26 +332,48 @@ function ConversationPicker() {
                   }),
                 );
               }}
-              className="flex-row items-center justify-between rounded-3xl border border-white/[0.12] bg-zinc-900/80 p-4 active:bg-zinc-800 active:scale-[0.99]"
+              className="flex-row items-center justify-between rounded-2xl p-4 active:bg-[#181922] active:scale-[0.99]"
+              style={{
+                backgroundColor: "#121318",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
             >
               <View className="flex-1 pr-3">
-                <Text className="text-base font-t3-bold text-white" numberOfLines={1}>
+                <Text
+                  className="text-[15px] font-t3-medium tracking-tight text-[#F4F4F6]"
+                  numberOfLines={1}
+                >
                   {thread.title}
                 </Text>
                 <View className="mt-2 flex-row items-center gap-2">
-                  <View className="flex-row items-center gap-1 rounded-full bg-blue-500/20 border border-blue-400/30 px-2.5 py-0.5">
-                    <SymbolView name="sparkles" size={10} tintColor="#38BDF8" />
-                    <Text className="text-[11px] font-t3-bold text-sky-300" numberOfLines={1}>
+                  <View
+                    className="flex-row items-center gap-1 rounded-full px-2 py-0.5"
+                    style={{
+                      backgroundColor: "rgba(212, 163, 115, 0.1)",
+                      borderWidth: 1,
+                      borderColor: "rgba(212, 163, 115, 0.2)",
+                    }}
+                  >
+                    <SymbolView name="sparkles" size={9} tintColor="#D4A373" />
+                    <Text className="text-[10px] font-t3-medium text-[#D4A373]" numberOfLines={1}>
                       {thread.modelSelection.model}
                     </Text>
                   </View>
-                  <Text className="text-xs text-zinc-400" numberOfLines={1}>
+                  <Text className="text-xs text-zinc-500" numberOfLines={1}>
                     {thread.environmentId}
                   </Text>
                 </View>
               </View>
-              <View className="h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] border border-white/15">
-                <SymbolView name="chevron.right" size={14} tintColor="#CBD5E1" />
+              <View
+                className="h-8 w-8 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.04)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 255, 255, 0.08)",
+                }}
+              >
+                <SymbolView name="chevron.right" size={13} tintColor="#A1A1AA" />
               </View>
             </Pressable>
           ))}
@@ -323,7 +388,7 @@ function AmbientAuraBackdrop({ theme }: { readonly theme: (typeof THEME_BY_PHASE
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
         <Defs>
-          <RadialGradient id="cockpit-glow" cx="50%" cy="38%" r="62%">
+          <RadialGradient id="cockpit-glow" cx="50%" cy="30%" r="65%">
             <Stop offset="0%" stopColor={theme.glowStart} stopOpacity="1" />
             <Stop offset="45%" stopColor={theme.glowMid} stopOpacity="1" />
             <Stop offset="100%" stopColor="transparent" stopOpacity="0" />
@@ -371,29 +436,29 @@ function LivingCelestialOrb({
   );
 
   const haloAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * 0.16 }],
-    opacity: active ? 0.35 + haloAnim.value * 0.45 : 0.15,
+    transform: [{ scale: 1 + haloAnim.value * 0.14 }],
+    opacity: active ? 0.3 + haloAnim.value * 0.35 : 0.12,
   }));
 
   const rippleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * 0.08 }],
-    opacity: active ? 0.25 + haloAnim.value * 0.35 : 0.1,
+    transform: [{ scale: 1 + haloAnim.value * 0.06 }],
+    opacity: active ? 0.2 + haloAnim.value * 0.25 : 0.08,
   }));
 
   const coreAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: active ? 1 + haloAnim.value * 0.03 : 1 }],
+    transform: [{ scale: active ? 1 + haloAnim.value * 0.025 : 1 }],
   }));
 
   return (
-    <View className="my-3 items-center justify-center" style={{ height: 210, width: 210 }}>
-      {/* Outer Ethereal Bloom Halo */}
+    <View className="my-2 items-center justify-center" style={{ height: 200, width: 200 }}>
+      {/* Outer Subtle Bloom Halo */}
       <Animated.View
         style={[
           haloAnimatedStyle,
           {
-            width: 200,
-            height: 200,
-            borderRadius: 100,
+            width: 190,
+            height: 190,
+            borderRadius: 95,
             backgroundColor: theme.glowStart,
             position: "absolute",
           },
@@ -405,42 +470,39 @@ function LivingCelestialOrb({
         style={[
           rippleAnimatedStyle,
           {
-            width: 160,
-            height: 160,
-            borderRadius: 80,
-            borderWidth: 1,
-            borderColor: active ? "rgba(255, 255, 255, 0.22)" : "rgba(255, 255, 255, 0.08)",
-            backgroundColor: "rgba(255, 255, 255, 0.02)",
+            width: 154,
+            height: 154,
+            borderRadius: 77,
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: active ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)",
+            backgroundColor: "rgba(255, 255, 255, 0.015)",
             position: "absolute",
           },
         ]}
       />
 
-      {/* Centerpiece Frosted Sound Chamber Disc */}
+      {/* Centerpiece Acoustic Disc */}
       <Animated.View
         style={[
           coreAnimatedStyle,
           {
-            width: 124,
-            height: 124,
-            borderRadius: 62,
-            backgroundColor: "#070B14",
-            borderWidth: 1.5,
-            borderTopColor: "rgba(255, 255, 255, 0.4)",
-            borderBottomColor: "rgba(255, 255, 255, 0.12)",
-            borderLeftColor: "rgba(255, 255, 255, 0.2)",
-            borderRightColor: "rgba(255, 255, 255, 0.2)",
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: "#111217",
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.08)",
             shadowColor: theme.accent,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: active ? 0.85 : 0.25,
-            shadowRadius: active ? 32 : 14,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: active ? 0.35 : 0.1,
+            shadowRadius: active ? 24 : 10,
           },
         ]}
         className="items-center justify-center"
       >
         {active ? (
           /* Dynamic 11-Bar Fluid Equalizer Waveform */
-          <View className="flex-row items-center justify-center" style={{ height: 50 }}>
+          <View className="flex-row items-center justify-center" style={{ height: 48 }}>
             {WAVE_BARS.map((bar) => (
               <AnimatedHarmonicBar
                 key={bar.id}
@@ -452,19 +514,19 @@ function LivingCelestialOrb({
             ))}
           </View>
         ) : (
-          /* Standby Sleek Illuminated Microphone Emblem */
+          /* Standby Warm Illuminated Microphone Emblem */
           <View className="items-center justify-center">
             <View
               className="items-center justify-center rounded-full"
               style={{
-                width: 60,
-                height: 60,
-                backgroundColor: "rgba(148, 163, 184, 0.12)",
-                borderWidth: 1.5,
-                borderColor: "rgba(148, 163, 184, 0.28)",
+                width: 54,
+                height: 54,
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.06)",
               }}
             >
-              <SymbolView name="mic" size={28} tintColor="#CBD5E1" />
+              <SymbolView name="mic" size={24} tintColor="#D4A373" />
             </View>
           </View>
         )}
@@ -493,7 +555,7 @@ const AnimatedHarmonicBar = memo(function AnimatedHarmonicBar({
     }
     const oscillation = Math.sin(wavePhase.value + bar.phaseOffset);
     const normalized = 0.25 + 0.75 * Math.abs(oscillation);
-    const height = 6 + normalized * bar.envelope * 20;
+    const height = 6 + normalized * bar.envelope * 18;
     return {
       height,
       opacity: 0.45 + normalized * 0.55,
@@ -606,13 +668,14 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
 
   return (
     <View
-      className="flex-1 bg-black justify-between"
+      className="flex-1 justify-between"
       style={{
+        backgroundColor: "#0A0A0C",
         paddingTop: Math.max(insets.top, 16),
         paddingBottom: Math.max(insets.bottom, 24),
       }}
     >
-      {/* Background Ambient Aura */}
+      {/* Background Ambient Warmth */}
       <AmbientAuraBackdrop theme={theme} />
 
       {/* Top Floating Cockpit Capsule */}
@@ -625,36 +688,48 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             conversation.pause();
             navigation.goBack();
           }}
-          className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] border border-white/15 active:bg-white/[0.18]"
+          className="h-10 w-10 items-center justify-center rounded-full active:opacity-75"
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.04)",
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.08)",
+          }}
         >
-          <SymbolView name="chevron.left" size={16} tintColor="#E2E8F0" />
+          <SymbolView name="chevron.left" size={15} tintColor="#D4D4D8" />
         </Pressable>
 
         {/* Center Title Capsule */}
         <View className="items-center flex-1 px-3">
           <View className="flex-row items-center gap-1.5 mb-0.5">
             <View
-              className="h-2 w-2 rounded-full"
+              className="h-1.5 w-1.5 rounded-full"
               style={{
-                backgroundColor: active ? theme.accent : "#94A3B8",
-                shadowColor: active ? theme.accent : "transparent",
-                shadowOpacity: 0.8,
-                shadowRadius: 4,
+                backgroundColor: active ? theme.accent : "#71717A",
               }}
             />
-            <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-zinc-300">
+            <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-400">
               CAR MODE
             </Text>
           </View>
-          <Text className="text-base font-t3-bold text-white text-center" numberOfLines={1}>
+          <Text
+            className="text-[15px] font-t3-bold tracking-tight text-[#F4F4F6] text-center"
+            numberOfLines={1}
+          >
             {thread?.projection.thread.title ?? "Conversation"}
           </Text>
         </View>
 
         {/* Model Capsule */}
-        <View className="flex-row items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
-          <SymbolView name="sparkles" size={11} tintColor={theme.accent} />
-          <Text className="text-[11px] font-t3-bold text-zinc-100" numberOfLines={1}>
+        <View
+          className="flex-row items-center gap-1.5 rounded-full px-3 py-1"
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.04)",
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.08)",
+          }}
+        >
+          <SymbolView name="sparkles" size={10} tintColor="#D4A373" />
+          <Text className="text-[11px] font-t3-medium text-zinc-300" numberOfLines={1}>
             {thread?.projection.thread.modelSelection.model ?? "Model"}
           </Text>
         </View>
@@ -667,13 +742,14 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
 
         {/* HUD Phase Tag */}
         <View
-          className="mb-1.5 flex-row items-center gap-1.5 rounded-full px-3 py-0.5 border"
+          className="mb-1.5 flex-row items-center gap-1.5 rounded-full px-3 py-0.5"
           style={{
-            backgroundColor: active ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)",
-            borderColor: active ? theme.accent : "rgba(255, 255, 255, 0.18)",
+            backgroundColor: active ? "rgba(255, 255, 255, 0.06)" : "rgba(255, 255, 255, 0.03)",
+            borderWidth: 1,
+            borderColor: active ? theme.border : "rgba(255, 255, 255, 0.08)",
           }}
         >
-          <SymbolView name={theme.icon} size={12} tintColor={theme.accent} />
+          <SymbolView name={theme.icon} size={11} tintColor={theme.accent} />
           <Text
             className="text-[10px] font-t3-bold uppercase tracking-widest"
             style={{ color: theme.accent }}
@@ -685,33 +761,34 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         {/* Main Status Headline */}
         <Text
           accessibilityLiveRegion="polite"
-          className="text-center text-2xl font-t3-bold text-white tracking-tight"
+          className="text-center text-2xl font-t3-bold tracking-tight text-[#F4F4F6]"
         >
           {theme.title}
         </Text>
-        <Text className="mt-1 text-center text-xs font-t3-medium text-zinc-300">
+        <Text className="mt-1.5 text-center text-xs font-t3-normal text-zinc-400 leading-5">
           {theme.subtitle}
         </Text>
 
         {/* Heads-Up Conversation Transcript & Agent Reply Cards */}
-        <View className="mt-4 w-full max-w-sm gap-2.5">
+        <View className="mt-5 w-full max-w-sm gap-2.5">
           {/* User Spoken Prompt Card */}
           {latestUserPrompt ? (
             <View
-              className="rounded-2xl border px-4 py-3 shadow-lg"
+              className="rounded-2xl px-4 py-3.5 shadow-sm"
               style={{
-                backgroundColor: "rgba(15, 23, 42, 0.90)",
-                borderColor: "rgba(56, 189, 248, 0.40)",
+                backgroundColor: "#121319",
+                borderWidth: 1,
+                borderColor: "rgba(212, 163, 115, 0.22)",
               }}
             >
               <View className="flex-row items-center gap-1.5 mb-1.5">
-                <SymbolView name="mic" size={12} tintColor="#38BDF8" />
-                <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-sky-400">
+                <SymbolView name="mic" size={11} tintColor="#D4A373" />
+                <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
                   You Said
                 </Text>
               </View>
               <Text
-                className="text-sm font-t3-medium italic text-white leading-5"
+                className="text-[14px] font-t3-normal text-[#F4F4F6] leading-6"
                 numberOfLines={3}
               >
                 “{latestUserPrompt}”
@@ -722,27 +799,31 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
           {/* Agent Spoken Response Card */}
           {latestAgentReply ? (
             <View
-              className="rounded-2xl border px-4 py-3 shadow-lg"
+              className="rounded-2xl px-4 py-3.5 shadow-sm"
               style={{
-                backgroundColor: "rgba(6, 28, 20, 0.90)",
-                borderColor: "rgba(52, 211, 153, 0.40)",
+                backgroundColor: "#121319",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
               }}
             >
               <View className="flex-row items-center justify-between mb-1.5">
                 <View className="flex-row items-center gap-1.5">
-                  <SymbolView name="sparkles" size={12} tintColor="#34D399" />
-                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-emerald-400">
+                  <SymbolView name="sparkles" size={11} tintColor="#D4A373" />
+                  <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-300">
                     Agent Reply
                   </Text>
                 </View>
                 {state.phase === "speaking" ? (
-                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/20 px-2 py-0.5 border border-emerald-500/30">
-                    <View className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400" />
-                    <Text className="text-[10px] font-t3-bold text-emerald-300">Speaking</Text>
+                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">
+                    <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
+                    <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
                   </View>
                 ) : null}
               </View>
-              <Text className="text-sm font-t3-medium text-zinc-100 leading-5" numberOfLines={4}>
+              <Text
+                className="text-[14px] font-t3-normal text-[#D4D4D8] leading-6"
+                numberOfLines={4}
+              >
                 {latestAgentReply}
               </Text>
             </View>
@@ -751,17 +832,31 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
 
         {/* Alert Banner */}
         {state.error || actionError ? (
-          <View className="mt-3 flex-row items-center gap-2 rounded-2xl bg-red-500/20 border border-red-500/40 px-4 py-2">
+          <View
+            className="mt-3.5 flex-row items-center gap-2 rounded-2xl px-4 py-2.5"
+            style={{
+              backgroundColor: "rgba(244, 114, 114, 0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(244, 114, 114, 0.25)",
+            }}
+          >
             <SymbolView name="exclamationmark.triangle" size={14} tintColor="#F87171" />
-            <Text accessibilityRole="alert" className="text-xs font-t3-medium text-red-200">
+            <Text accessibilityRole="alert" className="text-xs font-t3-normal text-rose-300">
               {state.error ?? actionError}
             </Text>
           </View>
         ) : null}
 
         {!nativeVoice ? (
-          <View className="mt-3 rounded-2xl bg-red-500/20 border border-red-500/40 p-3">
-            <Text className="text-center text-xs font-t3-medium text-red-200">
+          <View
+            className="mt-3.5 rounded-2xl p-3"
+            style={{
+              backgroundColor: "rgba(244, 114, 114, 0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(244, 114, 114, 0.25)",
+            }}
+          >
+            <Text className="text-center text-xs font-t3-normal text-rose-300">
               Rebuild and install this version’s native iOS app to enable voice chat.
             </Text>
           </View>
@@ -769,11 +864,17 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
       </View>
 
       {/* Bottom Cockpit Console */}
-      <View className="px-6 pt-2">
+      <View className="px-5 pt-2">
         <View
-          className="flex-row items-center justify-around py-3.5 px-4 rounded-3xl border border-white/15 shadow-2xl shadow-black"
+          className="flex-row items-center justify-around py-3 px-4 rounded-3xl"
           style={{
-            backgroundColor: "rgba(15, 20, 32, 0.95)",
+            backgroundColor: "#121318",
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.08)",
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.4,
+            shadowRadius: 20,
           }}
         >
           {/* Emergency Stop / Interrupt */}
@@ -782,15 +883,21 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               accessibilityRole="button"
               accessibilityLabel="Stop agent"
               onPress={handleInterrupt}
-              className="items-center justify-center rounded-full bg-red-500/20 border border-red-500/40 active:bg-red-500/35 active:scale-95"
-              style={{ width: 54, height: 54 }}
+              className="items-center justify-center rounded-full active:opacity-75 active:scale-95"
+              style={{
+                width: 52,
+                height: 52,
+                backgroundColor: "rgba(244, 114, 114, 0.08)",
+                borderWidth: 1,
+                borderColor: "rgba(244, 114, 114, 0.2)",
+              }}
             >
-              <SymbolView name="stop.fill" size={22} tintColor="#F87171" />
+              <SymbolView name="stop.fill" size={20} tintColor="#F87171" />
             </Pressable>
-            <Text className="text-[11px] font-t3-medium text-zinc-300">Interrupt</Text>
+            <Text className="text-[11px] font-t3-normal text-zinc-400">Interrupt</Text>
           </View>
 
-          {/* Hero Jewel Voice Button */}
+          {/* Hero Tactile Voice Button */}
           <View className="items-center gap-1.5">
             <Pressable
               accessibilityRole="button"
@@ -799,20 +906,25 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               onPress={handleToggle}
               className="items-center justify-center rounded-full active:scale-95"
               style={{
-                width: 76,
-                height: 76,
-                borderRadius: 38,
-                backgroundColor: active ? "#0B132B" : "#1D4ED8",
-                borderWidth: 2,
-                borderColor: active ? theme.accent : "#60A5FA",
-                shadowColor: active ? theme.accent : "#3B82F6",
-                shadowOpacity: 0.9,
-                shadowRadius: 24,
+                width: 72,
+                height: 72,
+                borderRadius: 36,
+                backgroundColor: active ? "#181920" : "#1B1C24",
+                borderWidth: 1.5,
+                borderColor: active ? theme.accent : "#D4A373",
+                shadowColor: active ? theme.accent : "#D4A373",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: active ? 0.4 : 0.25,
+                shadowRadius: 18,
               }}
             >
-              <SymbolView name={active ? "pause" : "mic"} size={32} tintColor="#FFFFFF" />
+              <SymbolView
+                name={active ? "pause" : "mic"}
+                size={30}
+                tintColor={active ? "#F4F4F6" : "#E5A967"}
+              />
             </Pressable>
-            <Text className="text-xs font-t3-bold text-white">
+            <Text className="text-xs font-t3-medium tracking-tight text-[#F4F4F6]">
               {active ? "Pause" : "Start Voice"}
             </Text>
           </View>
@@ -823,12 +935,18 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               accessibilityRole="button"
               accessibilityLabel="Open full conversation"
               onPress={openConversation}
-              className="items-center justify-center rounded-full bg-white/[0.10] border border-white/20 active:bg-white/[0.18] active:scale-95"
-              style={{ width: 54, height: 54 }}
+              className="items-center justify-center rounded-full active:opacity-75 active:scale-95"
+              style={{
+                width: 52,
+                height: 52,
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+              }}
             >
-              <SymbolView name="bubble.left.and.bubble.right" size={20} tintColor="#FFFFFF" />
+              <SymbolView name="bubble.left.and.bubble.right" size={20} tintColor="#D4D4D8" />
             </Pressable>
-            <Text className="text-[11px] font-t3-medium text-zinc-300">Thread</Text>
+            <Text className="text-[11px] font-t3-normal text-zinc-400">Thread</Text>
           </View>
         </View>
       </View>
