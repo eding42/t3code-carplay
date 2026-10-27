@@ -182,7 +182,19 @@ private final class T3VoiceSession: NSObject, AVSpeechSynthesizerDelegate {
       try session.setActive(true)
       let utterance = AVSpeechUtterance(string: text)
       self.utterance = utterance
-      utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
+      
+      let allVoices = AVSpeechSynthesisVoice.speechVoices()
+      // Prioritize Ava (Premium/Enhanced), then any Premium voice, then Enhanced, then Siri, then locale default
+      let voice = allVoices.first(where: { $0.name.localizedCaseInsensitiveContains("Ava") && $0.quality == .premium })
+        ?? allVoices.first(where: { $0.name.localizedCaseInsensitiveContains("Ava") })
+        ?? allVoices.first(where: { $0.language.hasPrefix("en") && $0.quality == .premium })
+        ?? allVoices.first(where: { $0.language.hasPrefix("en") && $0.quality == .enhanced })
+        ?? allVoices.first(where: { $0.identifier.contains("siri") })
+        ?? AVSpeechSynthesisVoice(language: Locale.current.identifier)
+      
+      utterance.voice = voice
+      utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 1.02
+      utterance.pitchMultiplier = 1.0
       synthesizer.speak(utterance)
     } catch {
       finish(error: "Could not play the spoken reply. Check your audio connection.")
