@@ -376,7 +376,7 @@ const SETTINGS_SCREENS = {
   SettingsDrivingMode: createNativeStackScreen({
     screen: DrivingModeScreen,
     linking: "settings/car-mode/:environmentId?/:threadId?",
-    options: { ...SETTINGS_PAGE_OPTIONS, headerTransparent: false, title: "Car mode" },
+    options: { headerShown: false },
   }),
   SettingsFollowUp: createNativeStackScreen({
     screen: SettingsFollowUpRouteScreen,

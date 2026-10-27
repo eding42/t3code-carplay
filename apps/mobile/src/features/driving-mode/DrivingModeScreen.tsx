@@ -24,7 +24,6 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { AppText as Text } from "../../components/ui/AppText";
 import { SymbolView, type AppSymbolName } from "../../components/ui/AppSymbol";
-import { GlassSurface } from "../../components/ui/GlassSurface";
 import { environmentThreadDetails, environmentThreadShells } from "../../state/threads";
 import { useSelectWorkspaceDetail } from "../workspace/useSelectWorkspaceDetail";
 import { createDrivingConversation } from "./drivingRuntime";
@@ -205,32 +204,50 @@ function ConversationPicker() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="px-5 py-6 gap-6"
-        style={{ paddingBottom: Math.max(insets.bottom, 24) }}
+        style={{
+          paddingTop: Math.max(insets.top, 16),
+          paddingBottom: Math.max(insets.bottom, 24),
+        }}
       >
+        {/* Top Back Navigation Button */}
+        <View className="flex-row items-center justify-between">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.goBack();
+            }}
+            className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] border border-white/15 active:bg-white/[0.18]"
+          >
+            <SymbolView name="chevron.left" size={16} tintColor="#E2E8F0" />
+          </Pressable>
+        </View>
+
         {/* Luxury Cockpit Hero */}
-        <View className="items-center pt-6 pb-2">
+        <View className="items-center pt-2 pb-2">
           <View className="h-20 w-20 items-center justify-center rounded-3xl bg-blue-500/10 border border-blue-400/25 mb-4 shadow-xl shadow-blue-500/25">
             <SymbolView name="car" size={38} tintColor="#38BDF8" />
           </View>
           <Text className="text-3xl font-t3-bold text-white tracking-tight">Car Mode</Text>
-          <Text className="mt-2 text-center text-sm font-t3-medium text-zinc-400 max-w-xs leading-5">
+          <Text className="mt-2 text-center text-sm font-t3-medium text-zinc-300 max-w-xs leading-5">
             Hands-free voice assistant built for driving. Continuous conversational coding with
             automatic pause detection.
           </Text>
 
           {/* Feature Badges */}
           <View className="mt-5 flex-row items-center gap-2">
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1">
+            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
               <SymbolView name="sparkles" size={12} tintColor="#38BDF8" />
-              <Text className="text-[11px] font-t3-bold text-sky-400">Zero Touch</Text>
+              <Text className="text-[11px] font-t3-bold text-sky-300">Zero Touch</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1">
+            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
               <SymbolView name="headphones" size={12} tintColor="#34D399" />
-              <Text className="text-[11px] font-t3-bold text-emerald-400">Car Audio</Text>
+              <Text className="text-[11px] font-t3-bold text-emerald-300">Car Audio</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1">
-              <SymbolView name="info.circle" size={12} tintColor="#A1A1AA" />
-              <Text className="text-[11px] font-t3-bold text-zinc-300">On-Device</Text>
+            <View className="flex-row items-center gap-1.5 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
+              <SymbolView name="info.circle" size={12} tintColor="#CBD5E1" />
+              <Text className="text-[11px] font-t3-bold text-zinc-200">On-Device</Text>
             </View>
           </View>
         </View>
@@ -238,21 +255,21 @@ function ConversationPicker() {
         {/* Threads List */}
         <View className="gap-3">
           <View className="flex-row items-center justify-between px-1">
-            <Text className="text-xs font-t3-bold uppercase tracking-widest text-zinc-500">
+            <Text className="text-xs font-t3-bold uppercase tracking-widest text-zinc-400">
               Select Conversation
             </Text>
-            <Text className="text-xs font-t3-medium text-zinc-600">
+            <Text className="text-xs font-t3-medium text-zinc-500">
               {conversations.length} {conversations.length === 1 ? "thread" : "threads"}
             </Text>
           </View>
 
           {conversations.length === 0 ? (
             <View className="items-center justify-center rounded-3xl border border-dashed border-zinc-800 py-16 px-6">
-              <SymbolView name="bubble.left.and.bubble.right" size={36} tintColor="#52525B" />
-              <Text className="mt-3 text-center text-base font-t3-bold text-zinc-300">
+              <SymbolView name="bubble.left.and.bubble.right" size={36} tintColor="#71717A" />
+              <Text className="mt-3 text-center text-base font-t3-bold text-zinc-200">
                 No active conversations
               </Text>
-              <Text className="mt-1 text-center text-xs text-zinc-500">
+              <Text className="mt-1 text-center text-xs text-zinc-400">
                 Start a thread with your T3 server to begin voice mode.
               </Text>
             </View>
@@ -272,26 +289,26 @@ function ConversationPicker() {
                   }),
                 );
               }}
-              className="flex-row items-center justify-between rounded-3xl border border-white/[0.08] bg-zinc-900/70 p-4 active:bg-zinc-800/80 active:scale-[0.99]"
+              className="flex-row items-center justify-between rounded-3xl border border-white/[0.12] bg-zinc-900/80 p-4 active:bg-zinc-800 active:scale-[0.99]"
             >
               <View className="flex-1 pr-3">
                 <Text className="text-base font-t3-bold text-white" numberOfLines={1}>
                   {thread.title}
                 </Text>
                 <View className="mt-2 flex-row items-center gap-2">
-                  <View className="flex-row items-center gap-1 rounded-full bg-blue-500/15 border border-blue-400/25 px-2.5 py-0.5">
+                  <View className="flex-row items-center gap-1 rounded-full bg-blue-500/20 border border-blue-400/30 px-2.5 py-0.5">
                     <SymbolView name="sparkles" size={10} tintColor="#38BDF8" />
-                    <Text className="text-[11px] font-t3-bold text-sky-400" numberOfLines={1}>
+                    <Text className="text-[11px] font-t3-bold text-sky-300" numberOfLines={1}>
                       {thread.modelSelection.model}
                     </Text>
                   </View>
-                  <Text className="text-xs text-zinc-500" numberOfLines={1}>
+                  <Text className="text-xs text-zinc-400" numberOfLines={1}>
                     {thread.environmentId}
                   </Text>
                 </View>
               </View>
-              <View className="h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] border border-white/10">
-                <SymbolView name="chevron.right" size={14} tintColor="#94A3B8" />
+              <View className="h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] border border-white/15">
+                <SymbolView name="chevron.right" size={14} tintColor="#CBD5E1" />
               </View>
             </Pressable>
           ))}
@@ -392,7 +409,7 @@ function LivingCelestialOrb({
             height: 160,
             borderRadius: 80,
             borderWidth: 1,
-            borderColor: active ? "rgba(255, 255, 255, 0.18)" : "rgba(255, 255, 255, 0.06)",
+            borderColor: active ? "rgba(255, 255, 255, 0.22)" : "rgba(255, 255, 255, 0.08)",
             backgroundColor: "rgba(255, 255, 255, 0.02)",
             position: "absolute",
           },
@@ -409,30 +426,48 @@ function LivingCelestialOrb({
             borderRadius: 62,
             backgroundColor: "#070B14",
             borderWidth: 1.5,
-            borderTopColor: "rgba(255, 255, 255, 0.35)",
-            borderBottomColor: "rgba(255, 255, 255, 0.08)",
-            borderLeftColor: "rgba(255, 255, 255, 0.15)",
-            borderRightColor: "rgba(255, 255, 255, 0.15)",
+            borderTopColor: "rgba(255, 255, 255, 0.4)",
+            borderBottomColor: "rgba(255, 255, 255, 0.12)",
+            borderLeftColor: "rgba(255, 255, 255, 0.2)",
+            borderRightColor: "rgba(255, 255, 255, 0.2)",
             shadowColor: theme.accent,
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: active ? 0.85 : 0.2,
-            shadowRadius: active ? 32 : 12,
+            shadowOpacity: active ? 0.85 : 0.25,
+            shadowRadius: active ? 32 : 14,
           },
         ]}
         className="items-center justify-center"
       >
-        {/* Dynamic 11-Bar Fluid Equalizer Waveform */}
-        <View className="flex-row items-center justify-center" style={{ height: 50 }}>
-          {WAVE_BARS.map((bar) => (
-            <AnimatedHarmonicBar
-              key={bar.id}
-              bar={bar}
-              wavePhase={wavePhase}
-              accent={theme.accent}
-              active={active}
-            />
-          ))}
-        </View>
+        {active ? (
+          /* Dynamic 11-Bar Fluid Equalizer Waveform */
+          <View className="flex-row items-center justify-center" style={{ height: 50 }}>
+            {WAVE_BARS.map((bar) => (
+              <AnimatedHarmonicBar
+                key={bar.id}
+                bar={bar}
+                wavePhase={wavePhase}
+                accent={theme.accent}
+                active={active}
+              />
+            ))}
+          </View>
+        ) : (
+          /* Standby Sleek Illuminated Microphone Emblem */
+          <View className="items-center justify-center">
+            <View
+              className="items-center justify-center rounded-full"
+              style={{
+                width: 60,
+                height: 60,
+                backgroundColor: "rgba(148, 163, 184, 0.12)",
+                borderWidth: 1.5,
+                borderColor: "rgba(148, 163, 184, 0.28)",
+              }}
+            >
+              <SymbolView name="mic" size={28} tintColor="#CBD5E1" />
+            </View>
+          </View>
+        )}
       </Animated.View>
     </View>
   );
@@ -590,9 +625,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             conversation.pause();
             navigation.goBack();
           }}
-          className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] border border-white/10 active:bg-white/[0.15]"
+          className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] border border-white/15 active:bg-white/[0.18]"
         >
-          <SymbolView name="chevron.left" size={16} tintColor="#D4D4D8" />
+          <SymbolView name="chevron.left" size={16} tintColor="#E2E8F0" />
         </Pressable>
 
         {/* Center Title Capsule */}
@@ -601,13 +636,13 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <View
               className="h-2 w-2 rounded-full"
               style={{
-                backgroundColor: active ? theme.accent : "#71717A",
+                backgroundColor: active ? theme.accent : "#94A3B8",
                 shadowColor: active ? theme.accent : "transparent",
                 shadowOpacity: 0.8,
                 shadowRadius: 4,
               }}
             />
-            <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-zinc-400">
+            <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-zinc-300">
               CAR MODE
             </Text>
           </View>
@@ -617,9 +652,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         </View>
 
         {/* Model Capsule */}
-        <View className="flex-row items-center gap-1 rounded-full bg-white/[0.08] border border-white/10 px-3 py-1">
+        <View className="flex-row items-center gap-1 rounded-full bg-white/[0.08] border border-white/15 px-3 py-1">
           <SymbolView name="sparkles" size={11} tintColor={theme.accent} />
-          <Text className="text-[11px] font-t3-bold text-zinc-200" numberOfLines={1}>
+          <Text className="text-[11px] font-t3-bold text-zinc-100" numberOfLines={1}>
             {thread?.projection.thread.modelSelection.model ?? "Model"}
           </Text>
         </View>
@@ -634,8 +669,8 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         <View
           className="mb-1.5 flex-row items-center gap-1.5 rounded-full px-3 py-0.5 border"
           style={{
-            backgroundColor: active ? "rgba(255, 255, 255, 0.06)" : "transparent",
-            borderColor: active ? theme.accent : "rgba(255, 255, 255, 0.1)",
+            backgroundColor: active ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)",
+            borderColor: active ? theme.accent : "rgba(255, 255, 255, 0.18)",
           }}
         >
           <SymbolView name={theme.icon} size={12} tintColor={theme.accent} />
@@ -654,7 +689,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         >
           {theme.title}
         </Text>
-        <Text className="mt-1 text-center text-xs font-t3-medium text-zinc-400">
+        <Text className="mt-1 text-center text-xs font-t3-medium text-zinc-300">
           {theme.subtitle}
         </Text>
 
@@ -662,76 +697,84 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         <View className="mt-4 w-full max-w-sm gap-2.5">
           {/* User Spoken Prompt Card */}
           {latestUserPrompt ? (
-            <GlassSurface
-              glassEffectStyle="regular"
-              className="rounded-2xl border border-sky-400/20 px-4 py-2.5 shadow-lg"
+            <View
+              className="rounded-2xl border px-4 py-3 shadow-lg"
+              style={{
+                backgroundColor: "rgba(15, 23, 42, 0.90)",
+                borderColor: "rgba(56, 189, 248, 0.40)",
+              }}
             >
-              <View className="flex-row items-center gap-1.5 mb-1">
-                <SymbolView name="mic" size={10} tintColor="#38BDF8" />
-                <Text className="text-[10px] font-t3-bold uppercase tracking-wider text-sky-400">
+              <View className="flex-row items-center gap-1.5 mb-1.5">
+                <SymbolView name="mic" size={12} tintColor="#38BDF8" />
+                <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-sky-400">
                   You Said
                 </Text>
               </View>
               <Text
-                className="text-xs font-t3-medium italic text-zinc-100 leading-4"
-                numberOfLines={2}
+                className="text-sm font-t3-medium italic text-white leading-5"
+                numberOfLines={3}
               >
                 “{latestUserPrompt}”
               </Text>
-            </GlassSurface>
+            </View>
           ) : null}
 
           {/* Agent Spoken Response Card */}
           {latestAgentReply ? (
-            <GlassSurface
-              glassEffectStyle="regular"
-              className="rounded-2xl border border-emerald-400/20 px-4 py-2.5 shadow-lg"
+            <View
+              className="rounded-2xl border px-4 py-3 shadow-lg"
+              style={{
+                backgroundColor: "rgba(6, 28, 20, 0.90)",
+                borderColor: "rgba(52, 211, 153, 0.40)",
+              }}
             >
-              <View className="flex-row items-center justify-between mb-1">
+              <View className="flex-row items-center justify-between mb-1.5">
                 <View className="flex-row items-center gap-1.5">
-                  <SymbolView name="sparkles" size={10} tintColor="#34D399" />
-                  <Text className="text-[10px] font-t3-bold uppercase tracking-wider text-emerald-400">
+                  <SymbolView name="sparkles" size={12} tintColor="#34D399" />
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-emerald-400">
                     Agent Reply
                   </Text>
                 </View>
                 {state.phase === "speaking" ? (
-                  <View className="flex-row items-center gap-1">
+                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/20 px-2 py-0.5 border border-emerald-500/30">
                     <View className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400" />
-                    <Text className="text-[9px] font-t3-medium text-emerald-400">Speaking</Text>
+                    <Text className="text-[10px] font-t3-bold text-emerald-300">Speaking</Text>
                   </View>
                 ) : null}
               </View>
-              <Text className="text-xs font-t3-medium text-zinc-200 leading-4" numberOfLines={3}>
+              <Text className="text-sm font-t3-medium text-zinc-100 leading-5" numberOfLines={4}>
                 {latestAgentReply}
               </Text>
-            </GlassSurface>
+            </View>
           ) : null}
         </View>
 
         {/* Alert Banner */}
         {state.error || actionError ? (
-          <View className="mt-3 flex-row items-center gap-2 rounded-2xl bg-red-500/15 border border-red-500/35 px-4 py-2">
+          <View className="mt-3 flex-row items-center gap-2 rounded-2xl bg-red-500/20 border border-red-500/40 px-4 py-2">
             <SymbolView name="exclamationmark.triangle" size={14} tintColor="#F87171" />
-            <Text accessibilityRole="alert" className="text-xs font-t3-medium text-red-300">
+            <Text accessibilityRole="alert" className="text-xs font-t3-medium text-red-200">
               {state.error ?? actionError}
             </Text>
           </View>
         ) : null}
 
         {!nativeVoice ? (
-          <View className="mt-3 rounded-2xl bg-red-500/15 border border-red-500/35 p-3">
-            <Text className="text-center text-xs text-red-300">
+          <View className="mt-3 rounded-2xl bg-red-500/20 border border-red-500/40 p-3">
+            <Text className="text-center text-xs font-t3-medium text-red-200">
               Rebuild and install this version’s native iOS app to enable voice chat.
             </Text>
           </View>
         ) : null}
       </View>
 
-      {/* Bottom Cockpit Glass Console */}
+      {/* Bottom Cockpit Console */}
       <View className="px-6 pt-2">
-        <GlassSurface
-          glassEffectStyle="regular"
-          className="flex-row items-center justify-around py-3 px-4 rounded-3xl border border-white/10 shadow-2xl shadow-black"
+        <View
+          className="flex-row items-center justify-around py-3.5 px-4 rounded-3xl border border-white/15 shadow-2xl shadow-black"
+          style={{
+            backgroundColor: "rgba(15, 20, 32, 0.95)",
+          }}
         >
           {/* Emergency Stop / Interrupt */}
           <View className="items-center gap-1.5">
@@ -739,12 +782,12 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               accessibilityRole="button"
               accessibilityLabel="Stop agent"
               onPress={handleInterrupt}
-              className="items-center justify-center rounded-full bg-red-500/15 border border-red-500/30 active:bg-red-500/35 active:scale-95"
-              style={{ width: 52, height: 52 }}
+              className="items-center justify-center rounded-full bg-red-500/20 border border-red-500/40 active:bg-red-500/35 active:scale-95"
+              style={{ width: 54, height: 54 }}
             >
-              <SymbolView name="stop.fill" size={20} tintColor="#EF4444" />
+              <SymbolView name="stop.fill" size={22} tintColor="#F87171" />
             </Pressable>
-            <Text className="text-[11px] font-t3-medium text-zinc-400">Interrupt</Text>
+            <Text className="text-[11px] font-t3-medium text-zinc-300">Interrupt</Text>
           </View>
 
           {/* Hero Jewel Voice Button */}
@@ -759,11 +802,11 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                 width: 76,
                 height: 76,
                 borderRadius: 38,
-                backgroundColor: active ? "#0F172A" : "#1D4ED8",
+                backgroundColor: active ? "#0B132B" : "#1D4ED8",
                 borderWidth: 2,
                 borderColor: active ? theme.accent : "#60A5FA",
                 shadowColor: active ? theme.accent : "#3B82F6",
-                shadowOpacity: 0.85,
+                shadowOpacity: 0.9,
                 shadowRadius: 24,
               }}
             >
@@ -780,14 +823,14 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               accessibilityRole="button"
               accessibilityLabel="Open full conversation"
               onPress={openConversation}
-              className="items-center justify-center rounded-full bg-white/[0.08] border border-white/10 active:bg-white/[0.15] active:scale-95"
-              style={{ width: 52, height: 52 }}
+              className="items-center justify-center rounded-full bg-white/[0.10] border border-white/20 active:bg-white/[0.18] active:scale-95"
+              style={{ width: 54, height: 54 }}
             >
-              <SymbolView name="bubble.left.and.bubble.right" size={20} tintColor="#E2E8F0" />
+              <SymbolView name="bubble.left.and.bubble.right" size={20} tintColor="#FFFFFF" />
             </Pressable>
-            <Text className="text-[11px] font-t3-medium text-zinc-400">Thread</Text>
+            <Text className="text-[11px] font-t3-medium text-zinc-300">Thread</Text>
           </View>
-        </GlassSurface>
+        </View>
       </View>
     </View>
   );
