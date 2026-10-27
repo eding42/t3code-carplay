@@ -28,6 +28,7 @@ export interface VoiceConversationDependencies {
   readonly send: (text: string, messageId: string) => Promise<void>;
   readonly reply: (messageId: string) => VoiceReply;
   readonly messageId: () => string;
+  readonly notifyPhaseChange?: (phase: VoicePhase) => void;
 }
 
 export function spokenReply(markdown: string): string {
@@ -196,7 +197,11 @@ export class VoiceConversation {
     agentReply = this.state.agentReply,
     error: string | null = null,
   ): void {
+    const previousPhase = this.state.phase;
     this.state = { phase, transcript, agentReply, error };
+    if (previousPhase !== phase) {
+      this.dependencies.notifyPhaseChange?.(phase);
+    }
     for (const listener of this.listeners) listener();
   }
 }

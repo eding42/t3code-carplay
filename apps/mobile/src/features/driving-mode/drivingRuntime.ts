@@ -111,6 +111,15 @@ export function createDrivingConversation(ref: ScopedThreadRef) {
       }
       return voiceReply(readProjection(), messageId);
     },
+    notifyPhaseChange: (phase) => {
+      if (phase === "listening") {
+        nativeVoice?.playPing("listening");
+      } else if (phase === "sending") {
+        nativeVoice?.playPing("sent");
+      } else if (phase === "speaking") {
+        nativeVoice?.playPing("reply");
+      }
+    },
   });
 
   return {

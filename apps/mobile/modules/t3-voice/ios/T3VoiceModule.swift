@@ -25,6 +25,21 @@ public final class T3VoiceModule: Module {
       self.voice.stop()
     }.runOnQueue(.main)
 
+    Function("playPing") { (tone: String) in
+      let soundId: SystemSoundID
+      switch tone {
+      case "listening":
+        soundId = 1113 // Begin recording / active ping
+      case "sent":
+        soundId = 1001 // Sent mail / dispatch ping
+      case "reply":
+        soundId = 1002 // Received message / chime
+      default:
+        soundId = 1104 // Subtle tap
+      }
+      AudioServicesPlaySystemSound(soundId)
+    }
+
     OnDestroy {
       DispatchQueue.main.async { self.voice.stop() }
     }

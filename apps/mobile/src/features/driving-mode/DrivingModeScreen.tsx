@@ -14,6 +14,7 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useDerivedValue,
+  useSharedValue,
   withRepeat,
   withSequence,
   withTiming,
@@ -408,6 +409,19 @@ function LivingCelestialOrb({
   readonly active: boolean;
 }) {
   const theme = THEME_BY_PHASE[phase];
+  const flashAnim = useSharedValue(0);
+
+  useEffect(() => {
+    flashAnim.value = withSequence(
+      withTiming(1, { duration: 150, easing: Easing.out(Easing.ease) }),
+      withTiming(0, { duration: 600, easing: Easing.out(Easing.quad) }),
+    );
+  }, [phase, flashAnim]);
+
+  const flashStyle = useAnimatedStyle(() => ({
+    opacity: flashAnim.value * 0.45,
+    transform: [{ scale: 1 + flashAnim.value * 0.2 }],
+  }));
 
   const wavePhase = useDerivedValue(() =>
     active
@@ -451,6 +465,20 @@ function LivingCelestialOrb({
 
   return (
     <View className="my-2 items-center justify-center" style={{ height: 200, width: 200 }}>
+      {/* Phase Transition Radiant Flash */}
+      <Animated.View
+        style={[
+          flashStyle,
+          {
+            width: 210,
+            height: 210,
+            borderRadius: 105,
+            backgroundColor: theme.accent,
+            position: "absolute",
+          },
+        ]}
+      />
+
       {/* Outer Subtle Bloom Halo */}
       <Animated.View
         style={[
@@ -770,7 +798,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         </Text>
 
         {/* Heads-Up Conversation Transcript & Agent Reply Cards */}
-        <View className="mt-5 w-full max-w-sm gap-2.5">
+        <View className="mt-5 w-full max-w-sm gap-3">
           {/* User Spoken Prompt Card */}
           {latestUserPrompt ? (
             <View
@@ -778,17 +806,17 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               style={{
                 backgroundColor: "#121319",
                 borderWidth: 1,
-                borderColor: "rgba(212, 163, 115, 0.22)",
+                borderColor: "rgba(212, 163, 115, 0.28)",
               }}
             >
-              <View className="flex-row items-center gap-1.5 mb-1.5">
-                <SymbolView name="mic" size={11} tintColor="#D4A373" />
-                <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
+              <View className="flex-row items-center gap-1.5 mb-2">
+                <SymbolView name="mic" size={12} tintColor="#D4A373" />
+                <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
                   You Said
                 </Text>
               </View>
               <Text
-                className="text-[14px] font-t3-normal text-[#F4F4F6] leading-6"
+                className="text-[17px] font-t3-medium text-[#F4F4F6] leading-7"
                 numberOfLines={3}
               >
                 “{latestUserPrompt}”
@@ -803,25 +831,25 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               style={{
                 backgroundColor: "#121319",
                 borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.08)",
+                borderColor: state.phase === "speaking" ? "rgba(168, 197, 168, 0.35)" : "rgba(255, 255, 255, 0.08)",
               }}
             >
-              <View className="flex-row items-center justify-between mb-1.5">
+              <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center gap-1.5">
-                  <SymbolView name="sparkles" size={11} tintColor="#D4A373" />
-                  <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-300">
+                  <SymbolView name="sparkles" size={12} tintColor="#D4A373" />
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-zinc-300">
                     Agent Reply
                   </Text>
                 </View>
                 {state.phase === "speaking" ? (
-                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">
+                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 border border-emerald-500/20">
                     <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
                     <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
                   </View>
                 ) : null}
               </View>
               <Text
-                className="text-[14px] font-t3-normal text-[#D4D4D8] leading-6"
+                className="text-[17px] font-t3-normal text-[#D4D4D8] leading-7"
                 numberOfLines={4}
               >
                 {latestAgentReply}

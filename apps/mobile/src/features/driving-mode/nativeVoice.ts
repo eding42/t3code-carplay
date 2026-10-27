@@ -6,6 +6,7 @@ interface NativeVoice extends NativeModule {
   listen(): Promise<string>;
   speak(text: string): Promise<void>;
   stop(): Promise<void>;
+  playPing(tone: "listening" | "sent" | "reply" | "tap"): void;
 }
 
 export const nativeVoice =
