@@ -1,14 +1,13 @@
 import { useAtomValue } from "@effect/atom-react";
 import {
   CommonActions,
-  useFocusEffect,
   useNavigation,
   type StaticScreenProps,
 } from "@react-navigation/native";
 import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
 import * as Haptics from "expo-haptics";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { memo, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { memo, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -26,7 +25,6 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { AppText as Text } from "../../components/ui/AppText";
 import { SymbolView, type AppSymbolName } from "../../components/ui/AppSymbol";
 import { environmentThreadDetails, environmentThreadShells } from "../../state/threads";
-import { useSelectWorkspaceDetail } from "../workspace/useSelectWorkspaceDetail";
 import { createDrivingConversation } from "./drivingRuntime";
 import { nativeVoice } from "./nativeVoice";
 import { spokenReply, type VoicePhase } from "./voiceConversation";
@@ -637,7 +635,6 @@ function resolveLatestReply(
 
 function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
   const navigation = useNavigation();
-  const selectDetail = useSelectWorkspaceDetail();
   const insets = useSafeAreaInsets();
   const runtime = useMemo(() => createDrivingConversation(threadRef), [threadRef]);
   const { conversation } = runtime;
@@ -647,7 +644,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
   const active = state.phase !== "paused" && state.phase !== "error";
   const theme = THEME_BY_PHASE[state.phase];
 
-  useFocusEffect(useCallback(() => runtime.mount(), [runtime]));
+  useEffect(() => runtime.mount(), [runtime]);
 
   // oxlint-disable-next-line t3code/react-effect-budget -- Keep the mounted phone awake only during an explicitly started voice session.
   useEffect(() => {
@@ -664,14 +661,12 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
 
   const openConversation = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    conversation.pause();
-    selectDetail({
-      name: "Thread",
-      params: {
+    navigation.dispatch(
+      CommonActions.navigate("Thread", {
         environmentId: threadRef.environmentId,
         threadId: threadRef.threadId,
-      },
-    });
+      }),
+    );
   };
 
   const handleToggle = () => {
@@ -801,19 +796,25 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         <View className="mt-5 w-full max-w-sm gap-3">
           {/* User Spoken Prompt Card */}
           {latestUserPrompt ? (
-            <View
-              className="rounded-2xl px-4 py-3.5 shadow-sm"
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="View in thread"
+              onPress={openConversation}
+              className="rounded-2xl px-4 py-3.5 shadow-sm active:opacity-85 active:scale-[0.99]"
               style={{
                 backgroundColor: "#121319",
                 borderWidth: 1,
                 borderColor: "rgba(212, 163, 115, 0.28)",
               }}
             >
-              <View className="flex-row items-center gap-1.5 mb-2">
-                <SymbolView name="mic" size={12} tintColor="#D4A373" />
-                <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
-                  You Said
-                </Text>
+              <View className="flex-row items-center justify-between mb-2">
+                <View className="flex-row items-center gap-1.5">
+                  <SymbolView name="mic" size={12} tintColor="#D4A373" />
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
+                    You Said
+                  </Text>
+                </View>
+                <SymbolView name="arrow.up.right" size={10} tintColor="#71717A" />
               </View>
               <Text
                 className="text-[17px] font-t3-medium text-[#F4F4F6] leading-7"
@@ -821,17 +822,23 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               >
                 “{latestUserPrompt}”
               </Text>
-            </View>
+            </Pressable>
           ) : null}
 
           {/* Agent Spoken Response Card */}
           {latestAgentReply ? (
-            <View
-              className="rounded-2xl px-4 py-3.5 shadow-sm"
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="View in thread"
+              onPress={openConversation}
+              className="rounded-2xl px-4 py-3.5 shadow-sm active:opacity-85 active:scale-[0.99]"
               style={{
                 backgroundColor: "#121319",
                 borderWidth: 1,
-                borderColor: state.phase === "speaking" ? "rgba(168, 197, 168, 0.35)" : "rgba(255, 255, 255, 0.08)",
+                borderColor:
+                  state.phase === "speaking"
+                    ? "rgba(168, 197, 168, 0.35)"
+                    : "rgba(255, 255, 255, 0.08)",
               }}
             >
               <View className="flex-row items-center justify-between mb-2">
@@ -841,12 +848,15 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                     Agent Reply
                   </Text>
                 </View>
-                {state.phase === "speaking" ? (
-                  <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 border border-emerald-500/20">
-                    <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
-                    <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
-                  </View>
-                ) : null}
+                <View className="flex-row items-center gap-2">
+                  {state.phase === "speaking" ? (
+                    <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 border border-emerald-500/20">
+                      <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
+                      <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
+                    </View>
+                  ) : null}
+                  <SymbolView name="arrow.up.right" size={10} tintColor="#71717A" />
+                </View>
               </View>
               <Text
                 className="text-[17px] font-t3-normal text-[#D4D4D8] leading-7"
@@ -854,7 +864,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               >
                 {latestAgentReply}
               </Text>
-            </View>
+            </Pressable>
           ) : null}
         </View>
 
