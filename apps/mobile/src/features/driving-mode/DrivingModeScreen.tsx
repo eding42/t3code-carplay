@@ -249,7 +249,7 @@ function ConversationPicker() {
           >
             <SymbolView name="checkmark.circle.fill" size={11} tintColor="#A8C5A8" />
             <Text className="text-[11px] font-t3-medium text-zinc-300">
-              v{Constants.expoConfig?.version ?? "2.1.0"} ({Application.nativeBuildVersion ?? "dev"}) · Glance HUD
+              v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.2.0"} (b{Application.nativeBuildVersion ?? "2"}) · Glance HUD
             </Text>
           </View>
 
@@ -732,7 +732,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               }}
             />
             <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-400">
-              CAR MODE · v{Constants.expoConfig?.version ?? "2.1.0"}
+              CAR MODE · v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.2.0"} (b{Application.nativeBuildVersion ?? "2"})
             </Text>
           </View>
           <Text

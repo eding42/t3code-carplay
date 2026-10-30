@@ -220,7 +220,7 @@ const config: ExpoConfig = {
   slug: "t3-code",
   platforms: ["ios", "android"],
   scheme: variant.scheme,
-  version: repoEnv.T3CODE_MOBILE_VERSION ?? "2.1.0",
+  version: repoEnv.T3CODE_MOBILE_VERSION ?? "2.2.0",
   runtimeVersion: {
     // Skip costly fingerprinting on dev launches; preview and production OTAs require matching native projects.
     policy: runtimeVersionPolicy,
@@ -235,6 +235,7 @@ const config: ExpoConfig = {
     fallbackToCacheTimeout: 0,
   },
   ios: {
+    buildNumber: repoEnv.T3CODE_MOBILE_BUILD_NUMBER ?? "2",
     icon: variant.assets.iosIcon,
     supportsTablet: true,
     requireFullScreen: process.env.T3_SHOWCASE_CAPTURE_BUILD === "1",
