@@ -191,21 +191,7 @@ function ConversationPicker() {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   return (
-    <View className="flex-1" style={{ backgroundColor: "#0A0A0C" }}>
-      {/* Top Ambient Warmth */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Svg height="100%" width="100%">
-          <Defs>
-            <RadialGradient id="picker-aura" cx="50%" cy="12%" r="65%">
-              <Stop offset="0%" stopColor="rgba(212, 163, 115, 0.12)" stopOpacity="1" />
-              <Stop offset="50%" stopColor="rgba(212, 163, 115, 0.02)" stopOpacity="1" />
-              <Stop offset="100%" stopColor="transparent" stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100%" height="100%" fill="url(#picker-aura)" />
-        </Svg>
-      </View>
-
+    <View className="flex-1" style={{ backgroundColor: "#000000" }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="px-5 py-5 gap-6"
@@ -400,29 +386,16 @@ function ConversationPicker() {
   );
 }
 
-function AmbientAuraBackdrop({ theme }: { readonly theme: (typeof THEME_BY_PHASE)[VoicePhase] }) {
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-        <Defs>
-          <RadialGradient id="cockpit-glow" cx="50%" cy="30%" r="65%">
-            <Stop offset="0%" stopColor={theme.glowStart} stopOpacity="1" />
-            <Stop offset="45%" stopColor={theme.glowMid} stopOpacity="1" />
-            <Stop offset="100%" stopColor="transparent" stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#cockpit-glow)" />
-      </Svg>
-    </View>
-  );
-}
-
-function LivingCelestialOrb({
+function InteractiveHeroOrb({
   phase,
   active,
+  onPress,
+  disabled,
 }: {
   readonly phase: VoicePhase;
   readonly active: boolean;
+  readonly onPress: () => void;
+  readonly disabled?: boolean;
 }) {
   const theme = THEME_BY_PHASE[phase];
   const flashAnim = useSharedValue(0);
@@ -462,25 +435,42 @@ function LivingCelestialOrb({
           -1,
           true,
         )
-      : withTiming(0, { duration: 350 }),
+      : withRepeat(
+          withSequence(
+            withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
+            withTiming(0, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
+          ),
+          -1,
+          true,
+        ),
   );
 
   const haloAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * 0.14 }],
-    opacity: active ? 0.3 + haloAnim.value * 0.35 : 0.12,
+    transform: [{ scale: 1 + haloAnim.value * (active ? 0.16 : 0.08) }],
+    opacity: active ? 0.35 + haloAnim.value * 0.35 : 0.12 + haloAnim.value * 0.12,
   }));
 
   const rippleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * 0.06 }],
-    opacity: active ? 0.2 + haloAnim.value * 0.25 : 0.08,
+    transform: [{ scale: 1 + haloAnim.value * (active ? 0.08 : 0.04) }],
+    opacity: active ? 0.4 + haloAnim.value * 0.3 : 0.2,
   }));
 
   const coreAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: active ? 1 + haloAnim.value * 0.025 : 1 }],
+    transform: [{ scale: active ? 1 + haloAnim.value * 0.03 : 1 }],
   }));
 
   return (
-    <View className="my-2 items-center justify-center" style={{ height: 200, width: 200 }}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={active ? "Pause voice chat" : "Tap to speak"}
+      disabled={disabled}
+      onPress={() => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onPress();
+      }}
+      className="my-3 items-center justify-center active:scale-95"
+      style={{ height: 210, width: 210 }}
+    >
       {/* Phase Transition Radiant Flash */}
       <Animated.View
         style={[
@@ -503,7 +493,8 @@ function LivingCelestialOrb({
             width: 190,
             height: 190,
             borderRadius: 95,
-            backgroundColor: theme.glowStart,
+            backgroundColor: theme.accent,
+            opacity: 0.15,
             position: "absolute",
           },
         ]}
@@ -514,12 +505,12 @@ function LivingCelestialOrb({
         style={[
           rippleAnimatedStyle,
           {
-            width: 154,
-            height: 154,
-            borderRadius: 77,
-            borderWidth: StyleSheet.hairlineWidth,
-            borderColor: active ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)",
-            backgroundColor: "rgba(255, 255, 255, 0.015)",
+            width: 156,
+            height: 156,
+            borderRadius: 78,
+            borderWidth: 1.5,
+            borderColor: active ? theme.accent : "rgba(212, 163, 115, 0.4)",
+            backgroundColor: active ? "rgba(255, 255, 255, 0.03)" : "rgba(212, 163, 115, 0.04)",
             position: "absolute",
           },
         ]}
@@ -530,23 +521,23 @@ function LivingCelestialOrb({
         style={[
           coreAnimatedStyle,
           {
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            backgroundColor: "#111217",
-            borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.08)",
+            width: 136,
+            height: 136,
+            borderRadius: 68,
+            backgroundColor: active ? "#111218" : "#161720",
+            borderWidth: 2,
+            borderColor: active ? theme.accent : "#D4A373",
             shadowColor: theme.accent,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: active ? 0.35 : 0.1,
-            shadowRadius: active ? 24 : 10,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: active ? 0.7 : 0.45,
+            shadowRadius: active ? 32 : 22,
           },
         ]}
         className="items-center justify-center"
       >
         {active ? (
           /* Dynamic 11-Bar Fluid Equalizer Waveform */
-          <View className="flex-row items-center justify-center" style={{ height: 48 }}>
+          <View className="flex-row items-center justify-center" style={{ height: 50 }}>
             {WAVE_BARS.map((bar) => (
               <AnimatedHarmonicBar
                 key={bar.id}
@@ -560,22 +551,11 @@ function LivingCelestialOrb({
         ) : (
           /* Standby Warm Illuminated Microphone Emblem */
           <View className="items-center justify-center">
-            <View
-              className="items-center justify-center rounded-full"
-              style={{
-                width: 54,
-                height: 54,
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.06)",
-              }}
-            >
-              <SymbolView name="mic" size={24} tintColor="#D4A373" />
-            </View>
+            <SymbolView name="mic" size={42} tintColor="#D4A373" />
           </View>
         )}
       </Animated.View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -717,15 +697,12 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
     <View
       className="flex-1 justify-between"
       style={{
-        backgroundColor: "#0A0A0C",
+        backgroundColor: "#000000",
         paddingTop: Math.max(insets.top, 16),
         paddingBottom: Math.max(insets.bottom, 24),
       }}
     >
-      {/* Background Ambient Warmth */}
-      <AmbientAuraBackdrop theme={theme} />
-
-      {/* Top Floating Cockpit Capsule */}
+      {/* Top Floating Navigation Capsule */}
       <View className="px-5 pt-1 flex-row items-center justify-between">
         <Pressable
           accessibilityRole="button"
@@ -735,14 +712,14 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             conversation.pause();
             navigation.goBack();
           }}
-          className="h-12 w-12 items-center justify-center rounded-full active:opacity-75"
+          className="h-11 w-11 items-center justify-center rounded-full active:opacity-75"
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            backgroundColor: "rgba(255, 255, 255, 0.06)",
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.1)",
+            borderColor: "rgba(255, 255, 255, 0.12)",
           }}
         >
-          <SymbolView name="chevron.left" size={17} tintColor="#D4D4D8" />
+          <SymbolView name="chevron.left" size={17} tintColor="#E4E4E7" />
         </Pressable>
 
         {/* Center Title Capsule */}
@@ -759,7 +736,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             </Text>
           </View>
           <Text
-            className="text-base font-t3-bold tracking-tight text-[#F4F4F6] text-center"
+            className="text-base font-t3-bold tracking-tight text-white text-center"
             numberOfLines={1}
           >
             {thread?.projection.thread.title ?? "Conversation"}
@@ -783,23 +760,25 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         </Pressable>
       </View>
 
-      {/* Center Stage: Celestial Soundwave & Cockpit HUD */}
+      {/* Center Stage: Hero Glowing Orb & Glance Status */}
       <View className="items-center justify-center px-5 flex-1">
-        {/* Living Celestial Sound Orb */}
-        <LivingCelestialOrb phase={state.phase} active={active} />
+        {/* The Hero Orb IS the interactive button */}
+        <InteractiveHeroOrb
+          phase={state.phase}
+          active={active}
+          onPress={handleToggle}
+          disabled={!nativeVoice}
+        />
 
-        {/* Main Status Headline with Inline Phase Icon */}
-        <View className="flex-row items-center justify-center gap-2 mt-1">
-          <SymbolView name={theme.icon} size={22} tintColor={theme.accent} />
-          <Text
-            accessibilityLiveRegion="polite"
-            className="text-center text-[28px] font-t3-bold tracking-tight text-[#F4F4F6]"
-          >
-            {theme.title}
-          </Text>
-        </View>
-        <Text className="mt-1 text-center text-xs font-t3-normal text-zinc-400 leading-5">
-          {state.phase === "waiting" ? "Running workspace tools & models" : theme.subtitle}
+        {/* Status Headline */}
+        <Text
+          accessibilityLiveRegion="polite"
+          className="mt-4 text-center text-[30px] font-t3-bold tracking-tight text-white"
+        >
+          {theme.title}
+        </Text>
+        <Text className="mt-1 text-center text-sm font-t3-normal text-zinc-400 leading-5">
+          {state.phase === "waiting" ? "Running workspace tools…" : theme.subtitle}
         </Text>
 
         {/* Single-Focus Phase Cards (Eliminates Vertical Layout Overflow) */}
@@ -809,7 +788,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <View
               className="w-full rounded-2xl p-4 shadow-md"
               style={{
-                backgroundColor: "#161822",
+                backgroundColor: "#111218",
                 borderWidth: 1.5,
                 borderColor: "rgba(212, 163, 115, 0.35)",
               }}
@@ -836,7 +815,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                 </View>
               </View>
               <Text
-                className="text-[19px] font-t3-bold text-[#F4F4F6] leading-7"
+                className="text-[19px] font-t3-bold text-white leading-7"
                 numberOfLines={2}
               >
                 {activeActivity ? activeActivity.label : "Thinking through workspace…"}
@@ -849,7 +828,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <View
               className="w-full rounded-2xl p-4 shadow-md"
               style={{
-                backgroundColor: "#161822",
+                backgroundColor: "#111218",
                 borderWidth: 1.5,
                 borderColor: "rgba(168, 197, 168, 0.38)",
               }}
@@ -872,7 +851,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                 </View>
               </View>
               <Text
-                className="text-[19px] font-t3-medium text-[#F4F4F6] leading-7"
+                className="text-[19px] font-t3-medium text-white leading-7"
                 numberOfLines={4}
                 ellipsizeMode="tail"
               >
@@ -886,7 +865,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <View
               className="w-full rounded-2xl p-4 shadow-md"
               style={{
-                backgroundColor: "#161822",
+                backgroundColor: "#111218",
                 borderWidth: 1.5,
                 borderColor: "rgba(229, 169, 103, 0.35)",
               }}
@@ -905,7 +884,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                 </View>
               </View>
               <Text
-                className="text-[20px] font-t3-medium text-[#F4F4F6] leading-7"
+                className="text-[20px] font-t3-medium text-white leading-7"
                 numberOfLines={3}
               >
                 “{latestUserPrompt}”
@@ -919,9 +898,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <View
               className="w-full rounded-2xl p-4 shadow-sm"
               style={{
-                backgroundColor: "#161822",
+                backgroundColor: "#111218",
                 borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.12)",
+                borderColor: "rgba(255, 255, 255, 0.1)",
               }}
             >
               <View className="flex-row items-center justify-between mb-1.5">
@@ -946,9 +925,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
           <View
             className="mt-3.5 flex-row items-center gap-2 rounded-2xl px-4 py-2.5"
             style={{
-              backgroundColor: "rgba(244, 114, 114, 0.08)",
+              backgroundColor: "rgba(244, 114, 114, 0.12)",
               borderWidth: 1,
-              borderColor: "rgba(244, 114, 114, 0.25)",
+              borderColor: "rgba(244, 114, 114, 0.3)",
             }}
           >
             <SymbolView name="exclamationmark.triangle" size={14} tintColor="#F87171" />
@@ -962,9 +941,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
           <View
             className="mt-3.5 rounded-2xl p-3"
             style={{
-              backgroundColor: "rgba(244, 114, 114, 0.08)",
+              backgroundColor: "rgba(244, 114, 114, 0.12)",
               borderWidth: 1,
-              borderColor: "rgba(244, 114, 114, 0.25)",
+              borderColor: "rgba(244, 114, 114, 0.3)",
             }}
           >
             <Text className="text-center text-xs font-t3-normal text-rose-300">
@@ -974,87 +953,40 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         ) : null}
       </View>
 
-      {/* Bottom Cockpit Console */}
-      <View className="px-5 pt-2">
-        <View
-          className="flex-row items-center justify-center gap-14 py-3.5 px-6 rounded-3xl"
-          style={{
-            backgroundColor: "#14151D",
-            borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.1)",
-            shadowColor: "#000000",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.5,
-            shadowRadius: 24,
-          }}
-        >
-          {/* Phase-Aware Stop Button */}
-          <View className="items-center gap-1.5">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Stop agent"
-              disabled={!isTurnActive}
-              onPress={handleInterrupt}
-              className="items-center justify-center rounded-full active:opacity-75 active:scale-95"
-              style={{
-                width: 60,
-                height: 60,
-                backgroundColor: isTurnActive
-                  ? "rgba(244, 114, 114, 0.16)"
-                  : "rgba(255, 255, 255, 0.03)",
-                borderWidth: 1.5,
-                borderColor: isTurnActive
-                  ? "rgba(244, 114, 114, 0.35)"
-                  : "rgba(255, 255, 255, 0.06)",
-                opacity: isTurnActive ? 1 : 0.35,
-              }}
-            >
-              <SymbolView
-                name="stop.fill"
-                size={22}
-                tintColor={isTurnActive ? "#F87171" : "#71717A"}
-              />
-            </Pressable>
-            <Text
-              className="text-xs font-t3-medium"
-              style={{ color: isTurnActive ? "#F87171" : "#71717A" }}
-            >
-              Stop
+      {/* Bottom Bar: Action-Aware (No duplicate mic) */}
+      <View className="px-6 pb-2 items-center w-full">
+        {isTurnActive ? (
+          /* Prominent Stop Button when agent turn is active */
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Stop agent"
+            onPress={handleInterrupt}
+            className="w-full max-w-sm flex-row items-center justify-center gap-2.5 py-4 px-6 rounded-2xl active:opacity-75 active:scale-[0.98]"
+            style={{
+              backgroundColor: "rgba(244, 114, 114, 0.14)",
+              borderWidth: 1.5,
+              borderColor: "rgba(244, 114, 114, 0.35)",
+            }}
+          >
+            <SymbolView name="stop.fill" size={18} tintColor="#F87171" />
+            <Text className="text-base font-t3-bold text-rose-300">Stop Agent</Text>
+          </Pressable>
+        ) : (
+          /* Minimalist status badge when idle */
+          <View
+            className="flex-row items-center gap-2 rounded-full px-4 py-2"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.04)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.08)",
+            }}
+          >
+            <SymbolView name="sparkles" size={12} tintColor="#D4A373" />
+            <Text className="text-xs font-t3-medium text-zinc-400">
+              Tap orb to speak · Auto-sends on pause
             </Text>
           </View>
-
-          {/* Hero Tactile Voice Button (Enlarged 84px with Dominant Amber Contrast) */}
-          <View className="items-center gap-1.5">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={active ? "Pause voice chat" : "Start voice chat"}
-              disabled={!nativeVoice}
-              onPress={handleToggle}
-              className="items-center justify-center rounded-full active:scale-95"
-              style={{
-                width: 84,
-                height: 84,
-                borderRadius: 42,
-                backgroundColor: active ? "#161822" : "#D4A373",
-                borderWidth: active ? 2 : 0,
-                borderColor: active ? theme.accent : undefined,
-                shadowColor: theme.accent,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: active ? 0.45 : 0.6,
-                shadowRadius: 20,
-              }}
-            >
-              <SymbolView
-                name={active ? "pause" : "mic"}
-                size={34}
-                tintColor={active ? "#F4F4F6" : "#0A0A0C"}
-              />
-            </Pressable>
-            <Text className="text-xs font-t3-bold tracking-tight text-[#F4F4F6]">
-              {active ? "Pause" : "Start Voice"}
-            </Text>
-          </View>
-        </View>
+        )}
       </View>
     </View>
   );
