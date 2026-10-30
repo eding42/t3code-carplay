@@ -28,6 +28,7 @@ import { environmentThreadDetails, environmentThreadShells } from "../../state/t
 import { createDrivingConversation } from "./drivingRuntime";
 import { nativeVoice } from "./nativeVoice";
 import { spokenReply, type VoicePhase } from "./voiceConversation";
+import { resolveActiveAgentActivity } from "./voiceProjection";
 
 const THEME_BY_PHASE: Record<
   VoicePhase,
@@ -658,6 +659,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
 
   const latestUserPrompt = resolveLatestPrompt(state.transcript, thread?.projection?.turnItems);
   const latestAgentReply = resolveLatestReply(state.agentReply, thread?.projection?.turnItems);
+  const activeActivity = resolveActiveAgentActivity(thread?.projection?.turnItems);
 
   const openConversation = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -789,8 +791,40 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
           {theme.title}
         </Text>
         <Text className="mt-1.5 text-center text-xs font-t3-normal text-zinc-400 leading-5">
-          {theme.subtitle}
+          {state.phase === "waiting" && activeActivity ? activeActivity.label : theme.subtitle}
         </Text>
+
+        {/* Live Chain of Thought & Tool Execution Card */}
+        {state.phase === "waiting" && activeActivity ? (
+          <View
+            className="mt-3.5 w-full max-w-sm flex-row items-center gap-2.5 rounded-2xl px-4 py-3"
+            style={{
+              backgroundColor: "rgba(212, 163, 115, 0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(212, 163, 115, 0.3)",
+            }}
+          >
+            <View
+              className="h-7 w-7 items-center justify-center rounded-full"
+              style={{
+                backgroundColor: "rgba(212, 163, 115, 0.16)",
+              }}
+            >
+              <SymbolView name={activeActivity.icon} size={13} tintColor="#D4A373" />
+            </View>
+            <View className="flex-1 pr-1">
+              <Text className="text-[10px] font-t3-bold uppercase tracking-wider text-[#D4A373]">
+                {activeActivity.isReasoning ? "Chain of Thought" : "Agent Action"}
+              </Text>
+              <Text
+                className="text-[13px] font-t3-medium text-[#F4F4F6] mt-0.5 leading-5"
+                numberOfLines={2}
+              >
+                {activeActivity.label}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         {/* Heads-Up Conversation Transcript & Agent Reply Cards */}
         <View className="mt-5 w-full max-w-sm gap-3">

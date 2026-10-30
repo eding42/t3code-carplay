@@ -110,3 +110,67 @@ describe("voice turn projection", () => {
     ).toBe("failed");
   });
 });
+
+describe("resolveActiveAgentActivity", () => {
+  it("resolves dynamic tool reading file", async () => {
+    const { resolveActiveAgentActivity } = await import("./voiceProjection");
+    const activity = resolveActiveAgentActivity([
+      {
+        type: "dynamic_tool",
+        toolName: "view_file",
+        input: { absolute_path: "/path/to/voiceProjection.ts" },
+      },
+    ]);
+    expect(activity).toEqual({
+      label: "Reading voiceProjection.ts",
+      icon: "doc.text",
+      isReasoning: false,
+    });
+  });
+
+  it("resolves dynamic tool editing file", async () => {
+    const { resolveActiveAgentActivity } = await import("./voiceProjection");
+    const activity = resolveActiveAgentActivity([
+      {
+        type: "dynamic_tool",
+        toolName: "replace_file_content",
+        input: { TargetFile: "/path/to/DrivingModeScreen.tsx" },
+      },
+    ]);
+    expect(activity).toEqual({
+      label: "Editing DrivingModeScreen.tsx",
+      icon: "pencil",
+      isReasoning: false,
+    });
+  });
+
+  it("resolves command execution", async () => {
+    const { resolveActiveAgentActivity } = await import("./voiceProjection");
+    const activity = resolveActiveAgentActivity([
+      {
+        type: "command_execution",
+        input: "git status",
+      },
+    ]);
+    expect(activity).toEqual({
+      label: "Running: git status",
+      icon: "terminal",
+      isReasoning: false,
+    });
+  });
+
+  it("resolves reasoning / chain of thought", async () => {
+    const { resolveActiveAgentActivity } = await import("./voiceProjection");
+    const activity = resolveActiveAgentActivity([
+      {
+        type: "reasoning",
+        text: "Analyzing recent changes in the Car Mode implementation...",
+      },
+    ]);
+    expect(activity).toEqual({
+      label: "Analyzing recent changes in the Car Mode implementation...",
+      icon: "brain",
+      isReasoning: true,
+    });
+  });
+});
