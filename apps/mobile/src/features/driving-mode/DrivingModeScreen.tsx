@@ -5,10 +5,12 @@ import {
   type StaticScreenProps,
 } from "@react-navigation/native";
 import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
+import * as Application from "expo-application";
+import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { memo, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -249,6 +251,21 @@ function ConversationPicker() {
             Hands-free voice assistant built for driving. Continuous conversational coding with
             automatic pause detection.
           </Text>
+
+          {/* Version / Release Pill */}
+          <View
+            className="mt-3 flex-row items-center gap-1.5 rounded-full px-3 py-1"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
+            }}
+          >
+            <SymbolView name="checkmark.circle.fill" size={11} tintColor="#A8C5A8" />
+            <Text className="text-[11px] font-t3-medium text-zinc-300">
+              v{Constants.expoConfig?.version ?? "2.1.0"} ({Application.nativeBuildVersion ?? "dev"}) · Glance HUD
+            </Text>
+          </View>
 
           {/* Feature Badges */}
           <View className="mt-5 flex-row items-center gap-2">
@@ -660,6 +677,11 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
   const latestUserPrompt = resolveLatestPrompt(state.transcript, thread?.projection?.turnItems);
   const latestAgentReply = resolveLatestReply(state.agentReply, thread?.projection?.turnItems);
   const activeActivity = resolveActiveAgentActivity(thread?.projection?.turnItems);
+  const isTurnActive = state.phase === "waiting" || state.phase === "speaking";
+
+  useEffect(() => {
+    AccessibilityInfo.announceForAccessibility(theme.title);
+  }, [theme.title]);
 
   const openConversation = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -713,51 +735,52 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             conversation.pause();
             navigation.goBack();
           }}
-          className="h-10 w-10 items-center justify-center rounded-full active:opacity-75"
+          className="h-12 w-12 items-center justify-center rounded-full active:opacity-75"
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.04)",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.08)",
+            borderColor: "rgba(255, 255, 255, 0.1)",
           }}
         >
-          <SymbolView name="chevron.left" size={15} tintColor="#D4D4D8" />
+          <SymbolView name="chevron.left" size={17} tintColor="#D4D4D8" />
         </Pressable>
 
         {/* Center Title Capsule */}
         <View className="items-center flex-1 px-3">
           <View className="flex-row items-center gap-1.5 mb-0.5">
             <View
-              className="h-1.5 w-1.5 rounded-full"
+              className="h-2 w-2 rounded-full"
               style={{
                 backgroundColor: active ? theme.accent : "#71717A",
               }}
             />
             <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-400">
-              CAR MODE
+              CAR MODE · v{Constants.expoConfig?.version ?? "2.1.0"}
             </Text>
           </View>
           <Text
-            className="text-[15px] font-t3-bold tracking-tight text-[#F4F4F6] text-center"
+            className="text-base font-t3-bold tracking-tight text-[#F4F4F6] text-center"
             numberOfLines={1}
           >
             {thread?.projection.thread.title ?? "Conversation"}
           </Text>
         </View>
 
-        {/* Model Capsule */}
-        <View
-          className="flex-row items-center gap-1.5 rounded-full px-3 py-1"
+        {/* Thread Navigation Button (Safely out of driving thumb zone) */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open thread conversation"
+          onPress={openConversation}
+          className="h-10 px-3.5 flex-row items-center gap-1.5 rounded-full active:opacity-75"
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.04)",
+            backgroundColor: "rgba(255, 255, 255, 0.06)",
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.08)",
+            borderColor: "rgba(255, 255, 255, 0.12)",
           }}
         >
-          <SymbolView name="sparkles" size={10} tintColor="#D4A373" />
-          <Text className="text-[11px] font-t3-medium text-zinc-300" numberOfLines={1}>
-            {thread?.projection.thread.modelSelection.model ?? "Model"}
-          </Text>
-        </View>
+          <Text className="text-xs font-t3-medium text-zinc-200">Thread</Text>
+          <SymbolView name="arrow.up.right" size={11} tintColor="#D4A373" />
+        </Pressable>
       </View>
 
       {/* Center Stage: Celestial Soundwave & Cockpit HUD */}
@@ -765,140 +788,156 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         {/* Living Celestial Sound Orb */}
         <LivingCelestialOrb phase={state.phase} active={active} />
 
-        {/* HUD Phase Tag */}
-        <View
-          className="mb-1.5 flex-row items-center gap-1.5 rounded-full px-3 py-0.5"
-          style={{
-            backgroundColor: active ? "rgba(255, 255, 255, 0.06)" : "rgba(255, 255, 255, 0.03)",
-            borderWidth: 1,
-            borderColor: active ? theme.border : "rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          <SymbolView name={theme.icon} size={11} tintColor={theme.accent} />
+        {/* Main Status Headline with Inline Phase Icon */}
+        <View className="flex-row items-center justify-center gap-2 mt-1">
+          <SymbolView name={theme.icon} size={22} tintColor={theme.accent} />
           <Text
-            className="text-[10px] font-t3-bold uppercase tracking-widest"
-            style={{ color: theme.accent }}
+            accessibilityLiveRegion="polite"
+            className="text-center text-[28px] font-t3-bold tracking-tight text-[#F4F4F6]"
           >
-            {theme.badge}
+            {theme.title}
           </Text>
         </View>
-
-        {/* Main Status Headline */}
-        <Text
-          accessibilityLiveRegion="polite"
-          className="text-center text-2xl font-t3-bold tracking-tight text-[#F4F4F6]"
-        >
-          {theme.title}
-        </Text>
-        <Text className="mt-1.5 text-center text-xs font-t3-normal text-zinc-400 leading-5">
-          {state.phase === "waiting" && activeActivity ? activeActivity.label : theme.subtitle}
+        <Text className="mt-1 text-center text-xs font-t3-normal text-zinc-400 leading-5">
+          {state.phase === "waiting" ? "Running workspace tools & models" : theme.subtitle}
         </Text>
 
-        {/* Live Chain of Thought & Tool Execution Card */}
-        {state.phase === "waiting" && activeActivity ? (
-          <View
-            className="mt-3.5 w-full max-w-sm flex-row items-center gap-2.5 rounded-2xl px-4 py-3"
-            style={{
-              backgroundColor: "rgba(212, 163, 115, 0.08)",
-              borderWidth: 1,
-              borderColor: "rgba(212, 163, 115, 0.3)",
-            }}
-          >
+        {/* Single-Focus Phase Cards (Eliminates Vertical Layout Overflow) */}
+        <View className="mt-4 w-full max-w-sm">
+          {/* Waiting: Live Chain of Thought & Tool Execution Card */}
+          {state.phase === "waiting" ? (
             <View
-              className="h-7 w-7 items-center justify-center rounded-full"
+              className="w-full rounded-2xl p-4 shadow-md"
               style={{
-                backgroundColor: "rgba(212, 163, 115, 0.16)",
-              }}
-            >
-              <SymbolView name={activeActivity.icon} size={13} tintColor="#D4A373" />
-            </View>
-            <View className="flex-1 pr-1">
-              <Text className="text-[10px] font-t3-bold uppercase tracking-wider text-[#D4A373]">
-                {activeActivity.isReasoning ? "Chain of Thought" : "Agent Action"}
-              </Text>
-              <Text
-                className="text-[13px] font-t3-medium text-[#F4F4F6] mt-0.5 leading-5"
-                numberOfLines={2}
-              >
-                {activeActivity.label}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {/* Heads-Up Conversation Transcript & Agent Reply Cards */}
-        <View className="mt-5 w-full max-w-sm gap-3">
-          {/* User Spoken Prompt Card */}
-          {latestUserPrompt ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="View in thread"
-              onPress={openConversation}
-              className="rounded-2xl px-4 py-3.5 shadow-sm active:opacity-85 active:scale-[0.99]"
-              style={{
-                backgroundColor: "#121319",
-                borderWidth: 1,
-                borderColor: "rgba(212, 163, 115, 0.28)",
+                backgroundColor: "#161822",
+                borderWidth: 1.5,
+                borderColor: "rgba(212, 163, 115, 0.35)",
               }}
             >
               <View className="flex-row items-center justify-between mb-2">
-                <View className="flex-row items-center gap-1.5">
-                  <SymbolView name="mic" size={12} tintColor="#D4A373" />
-                  <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-[#D4A373]">
-                    You Said
+                <View className="flex-row items-center gap-2">
+                  <View
+                    className="h-6 w-6 items-center justify-center rounded-full"
+                    style={{ backgroundColor: "rgba(212, 163, 115, 0.2)" }}
+                  >
+                    <SymbolView
+                      name={activeActivity ? activeActivity.icon : "gearshape"}
+                      size={12}
+                      tintColor="#D4A373"
+                    />
+                  </View>
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-[#D4A373]">
+                    {activeActivity?.isReasoning ? "Reasoning" : "Active Tool Action"}
                   </Text>
                 </View>
-                <SymbolView name="arrow.up.right" size={10} tintColor="#71717A" />
+                <View className="flex-row items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 border border-amber-500/20">
+                  <View className="h-1.5 w-1.5 rounded-full bg-[#D4A373]" />
+                  <Text className="text-[10px] font-t3-medium text-[#D4A373]">Running</Text>
+                </View>
               </View>
               <Text
-                className="text-[17px] font-t3-medium text-[#F4F4F6] leading-7"
+                className="text-[19px] font-t3-bold text-[#F4F4F6] leading-7"
+                numberOfLines={2}
+              >
+                {activeActivity ? activeActivity.label : "Thinking through workspace…"}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Speaking: Agent Response Card */}
+          {state.phase === "speaking" && latestAgentReply ? (
+            <View
+              className="w-full rounded-2xl p-4 shadow-md"
+              style={{
+                backgroundColor: "#161822",
+                borderWidth: 1.5,
+                borderColor: "rgba(168, 197, 168, 0.38)",
+              }}
+            >
+              <View className="flex-row items-center justify-between mb-2">
+                <View className="flex-row items-center gap-2">
+                  <View
+                    className="h-6 w-6 items-center justify-center rounded-full"
+                    style={{ backgroundColor: "rgba(168, 197, 168, 0.2)" }}
+                  >
+                    <SymbolView name="headphones" size={12} tintColor="#A8C5A8" />
+                  </View>
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-[#A8C5A8]">
+                    Agent Speaking
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 border border-emerald-500/30">
+                  <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
+                  <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
+                </View>
+              </View>
+              <Text
+                className="text-[19px] font-t3-medium text-[#F4F4F6] leading-7"
+                numberOfLines={4}
+                ellipsizeMode="tail"
+              >
+                {latestAgentReply}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Listening / Delivering: User Speech Transcription Card */}
+          {(state.phase === "listening" || state.phase === "sending") && latestUserPrompt ? (
+            <View
+              className="w-full rounded-2xl p-4 shadow-md"
+              style={{
+                backgroundColor: "#161822",
+                borderWidth: 1.5,
+                borderColor: "rgba(229, 169, 103, 0.35)",
+              }}
+            >
+              <View className="flex-row items-center justify-between mb-2">
+                <View className="flex-row items-center gap-2">
+                  <View
+                    className="h-6 w-6 items-center justify-center rounded-full"
+                    style={{ backgroundColor: "rgba(229, 169, 103, 0.2)" }}
+                  >
+                    <SymbolView name="mic" size={12} tintColor="#E5A967" />
+                  </View>
+                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-[#E5A967]">
+                    {state.phase === "listening" ? "Listening to You" : "Delivering Prompt"}
+                  </Text>
+                </View>
+              </View>
+              <Text
+                className="text-[20px] font-t3-medium text-[#F4F4F6] leading-7"
                 numberOfLines={3}
               >
                 “{latestUserPrompt}”
               </Text>
-            </Pressable>
+            </View>
           ) : null}
 
-          {/* Agent Spoken Response Card */}
-          {latestAgentReply ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="View in thread"
-              onPress={openConversation}
-              className="rounded-2xl px-4 py-3.5 shadow-sm active:opacity-85 active:scale-[0.99]"
+          {/* Standby / Paused / Error: Previous Exchange Summary */}
+          {(state.phase === "paused" || state.phase === "preparing" || state.phase === "error") &&
+          (latestAgentReply || latestUserPrompt) ? (
+            <View
+              className="w-full rounded-2xl p-4 shadow-sm"
               style={{
-                backgroundColor: "#121319",
+                backgroundColor: "#161822",
                 borderWidth: 1,
-                borderColor:
-                  state.phase === "speaking"
-                    ? "rgba(168, 197, 168, 0.35)"
-                    : "rgba(255, 255, 255, 0.08)",
+                borderColor: "rgba(255, 255, 255, 0.12)",
               }}
             >
-              <View className="flex-row items-center justify-between mb-2">
-                <View className="flex-row items-center gap-1.5">
-                  <SymbolView name="sparkles" size={12} tintColor="#D4A373" />
-                  <Text className="text-[11px] font-t3-bold uppercase tracking-widest text-zinc-300">
-                    Agent Reply
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  {state.phase === "speaking" ? (
-                    <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 border border-emerald-500/20">
-                      <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
-                      <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
-                    </View>
-                  ) : null}
-                  <SymbolView name="arrow.up.right" size={10} tintColor="#71717A" />
-                </View>
+              <View className="flex-row items-center justify-between mb-1.5">
+                <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-zinc-400">
+                  Last Response
+                </Text>
+                <SymbolView name="clock" size={11} tintColor="#71717A" />
               </View>
               <Text
-                className="text-[17px] font-t3-normal text-[#D4D4D8] leading-7"
-                numberOfLines={4}
+                className="text-[16px] font-t3-normal text-zinc-300 leading-6"
+                numberOfLines={3}
+                ellipsizeMode="tail"
               >
-                {latestAgentReply}
+                {latestAgentReply || latestUserPrompt}
               </Text>
-            </Pressable>
+            </View>
           ) : null}
         </View>
 
@@ -938,38 +977,53 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
       {/* Bottom Cockpit Console */}
       <View className="px-5 pt-2">
         <View
-          className="flex-row items-center justify-around py-3 px-4 rounded-3xl"
+          className="flex-row items-center justify-center gap-14 py-3.5 px-6 rounded-3xl"
           style={{
-            backgroundColor: "#121318",
+            backgroundColor: "#14151D",
             borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.08)",
+            borderColor: "rgba(255, 255, 255, 0.1)",
             shadowColor: "#000000",
             shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.4,
-            shadowRadius: 20,
+            shadowOpacity: 0.5,
+            shadowRadius: 24,
           }}
         >
-          {/* Emergency Stop / Interrupt */}
+          {/* Phase-Aware Stop Button */}
           <View className="items-center gap-1.5">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Stop agent"
+              disabled={!isTurnActive}
               onPress={handleInterrupt}
               className="items-center justify-center rounded-full active:opacity-75 active:scale-95"
               style={{
-                width: 52,
-                height: 52,
-                backgroundColor: "rgba(244, 114, 114, 0.08)",
-                borderWidth: 1,
-                borderColor: "rgba(244, 114, 114, 0.2)",
+                width: 60,
+                height: 60,
+                backgroundColor: isTurnActive
+                  ? "rgba(244, 114, 114, 0.16)"
+                  : "rgba(255, 255, 255, 0.03)",
+                borderWidth: 1.5,
+                borderColor: isTurnActive
+                  ? "rgba(244, 114, 114, 0.35)"
+                  : "rgba(255, 255, 255, 0.06)",
+                opacity: isTurnActive ? 1 : 0.35,
               }}
             >
-              <SymbolView name="stop.fill" size={20} tintColor="#F87171" />
+              <SymbolView
+                name="stop.fill"
+                size={22}
+                tintColor={isTurnActive ? "#F87171" : "#71717A"}
+              />
             </Pressable>
-            <Text className="text-[11px] font-t3-normal text-zinc-400">Interrupt</Text>
+            <Text
+              className="text-xs font-t3-medium"
+              style={{ color: isTurnActive ? "#F87171" : "#71717A" }}
+            >
+              Stop
+            </Text>
           </View>
 
-          {/* Hero Tactile Voice Button */}
+          {/* Hero Tactile Voice Button (Enlarged 84px with Dominant Amber Contrast) */}
           <View className="items-center gap-1.5">
             <Pressable
               accessibilityRole="button"
@@ -978,47 +1032,27 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               onPress={handleToggle}
               className="items-center justify-center rounded-full active:scale-95"
               style={{
-                width: 72,
-                height: 72,
-                borderRadius: 36,
-                backgroundColor: active ? "#181920" : "#1B1C24",
-                borderWidth: 1.5,
-                borderColor: active ? theme.accent : "#D4A373",
-                shadowColor: active ? theme.accent : "#D4A373",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: active ? 0.4 : 0.25,
-                shadowRadius: 18,
+                width: 84,
+                height: 84,
+                borderRadius: 42,
+                backgroundColor: active ? "#161822" : "#D4A373",
+                borderWidth: active ? 2 : 0,
+                borderColor: active ? theme.accent : undefined,
+                shadowColor: theme.accent,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: active ? 0.45 : 0.6,
+                shadowRadius: 20,
               }}
             >
               <SymbolView
                 name={active ? "pause" : "mic"}
-                size={30}
-                tintColor={active ? "#F4F4F6" : "#E5A967"}
+                size={34}
+                tintColor={active ? "#F4F4F6" : "#0A0A0C"}
               />
             </Pressable>
-            <Text className="text-xs font-t3-medium tracking-tight text-[#F4F4F6]">
+            <Text className="text-xs font-t3-bold tracking-tight text-[#F4F4F6]">
               {active ? "Pause" : "Start Voice"}
             </Text>
-          </View>
-
-          {/* Full Conversation View */}
-          <View className="items-center gap-1.5">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open full conversation"
-              onPress={openConversation}
-              className="items-center justify-center rounded-full active:opacity-75 active:scale-95"
-              style={{
-                width: 52,
-                height: 52,
-                backgroundColor: "rgba(255, 255, 255, 0.04)",
-                borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <SymbolView name="bubble.left.and.bubble.right" size={20} tintColor="#D4D4D8" />
-            </Pressable>
-            <Text className="text-[11px] font-t3-normal text-zinc-400">Thread</Text>
           </View>
         </View>
       </View>
