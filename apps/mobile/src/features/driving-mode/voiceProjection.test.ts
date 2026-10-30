@@ -28,7 +28,36 @@ describe("voice turn projection", () => {
       },
       "message-voice",
     );
-    expect(reply).toEqual({ status: "completed", text: "Fixed the bug.\n\nTests pass." });
+    expect(reply).toEqual({
+      status: "completed",
+      text: "Fixed the bug.\n\nTests pass.",
+      blocks: [
+        { id: "item-0-0", text: "Fixed the bug." },
+        { id: "item-1-0", text: "Tests pass." },
+      ],
+    });
+  });
+
+  it("extracts completed paragraph blocks even while subsequent blocks are streaming", () => {
+    const reply = voiceReply(
+      {
+        runs: [run("running")],
+        runtimeRequests: [],
+        turnItems: [
+          {
+            type: "assistant_message",
+            runId: "run-voice",
+            text: "First block finished.\n\nSecond block is still being typ",
+            streaming: true,
+          },
+        ],
+      },
+      "message-voice",
+    );
+    expect(reply.status).toBe("pending");
+    expect(reply.blocks).toEqual([
+      { id: "item-0-0", text: "First block finished." },
+    ]);
   });
 
   it("does not read streamed partial replies or commentary while code is still running", () => {

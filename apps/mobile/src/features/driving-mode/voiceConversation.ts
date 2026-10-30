@@ -14,9 +14,15 @@ export interface VoiceConversationState {
   readonly error: string | null;
 }
 
+export interface VoiceBlock {
+  readonly id: string;
+  readonly text: string;
+}
+
 export interface VoiceReply {
   readonly status: "pending" | "completed" | "blocked" | "failed";
   readonly text: string;
+  readonly blocks?: ReadonlyArray<VoiceBlock>;
 }
 
 export interface VoiceConversationDependencies {
@@ -29,6 +35,8 @@ export interface VoiceConversationDependencies {
   readonly reply: (messageId: string) => VoiceReply;
   readonly messageId: () => string;
   readonly notifyPhaseChange?: (phase: VoicePhase) => void;
+  readonly playChime?: () => void;
+  readonly chimeDelayMs?: number;
 }
 
 export function spokenReply(markdown: string): string {
@@ -56,6 +64,8 @@ export class VoiceConversation {
   private generation = 0;
   private pendingMessage: string | null = null;
   private enabled = false;
+  private spokenBlockIds = new Set<string>();
+  private isSpeakingBlock = false;
 
   constructor(private readonly dependencies: VoiceConversationDependencies) {}
 
@@ -90,6 +100,8 @@ export class VoiceConversation {
   pause(): void {
     this.enabled = false;
     this.generation += 1;
+    this.isSpeakingBlock = false;
+    this.spokenBlockIds.clear();
     this.dependencies.stopAudio();
     this.setState("paused");
   }
@@ -101,12 +113,18 @@ export class VoiceConversation {
       if (reason) this.fail(new Error(reason));
       return;
     }
-    if (this.state.phase !== "waiting" || this.pendingMessage === null) return;
+    if (
+      (this.state.phase !== "waiting" && this.state.phase !== "speaking") ||
+      this.pendingMessage === null
+    ) {
+      return;
+    }
     const reply = this.dependencies.reply(this.pendingMessage);
-    if (reply.status === "pending") return;
-    this.pendingMessage = null;
-    const generation = this.generation;
     if (reply.status === "blocked" || reply.status === "failed") {
+      this.pendingMessage = null;
+      this.spokenBlockIds.clear();
+      this.isSpeakingBlock = false;
+      const generation = this.generation;
       void this.announceAndPause(
         reply.status === "blocked"
           ? "The agent needs your approval or an answer. Pause here and review the conversation when parked."
@@ -115,7 +133,38 @@ export class VoiceConversation {
       );
       return;
     }
-    void this.sayAndListen(spokenReply(reply.text), generation);
+
+    if (this.isSpeakingBlock) return;
+
+    const unspokenBlocks = (reply.blocks ?? []).filter(
+      (block) => !this.spokenBlockIds.has(block.id),
+    );
+
+    if (unspokenBlocks.length > 0) {
+      const block = unspokenBlocks[0]!;
+      this.spokenBlockIds.add(block.id);
+      const generation = this.generation;
+      void this.speakBlock(block, generation);
+      return;
+    }
+
+    if (reply.status === "completed") {
+      if (this.spokenBlockIds.size === 0 && reply.text.trim()) {
+        const generation = this.generation;
+        this.pendingMessage = null;
+        void this.sayAndListen(spokenReply(reply.text), generation);
+        return;
+      }
+      this.pendingMessage = null;
+      this.spokenBlockIds.clear();
+      const generation = this.generation;
+      void this.listen(generation);
+      return;
+    }
+
+    if (this.state.phase === "speaking") {
+      this.setState("waiting");
+    }
   }
 
   private current(generation: number): boolean {
@@ -144,6 +193,8 @@ export class VoiceConversation {
       }
       const messageId = this.dependencies.messageId();
       this.pendingMessage = messageId;
+      this.spokenBlockIds.clear();
+      this.isSpeakingBlock = false;
       this.setState("sending", transcript, "");
       await this.dependencies.send(transcript, messageId);
       if (!this.current(generation)) return;
@@ -158,13 +209,54 @@ export class VoiceConversation {
     }
   }
 
-  private async sayAndListen(text: string, generation: number): Promise<void> {
-    this.setState("speaking", undefined, text);
+  private async speakBlock(block: VoiceBlock, generation: number): Promise<void> {
+    this.isSpeakingBlock = true;
     try {
+      this.dependencies.playChime?.();
+      const delay = this.dependencies.playChime ? (this.dependencies.chimeDelayMs ?? 300) : 0;
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      if (!this.current(generation)) return;
+
+      const speech = spokenReply(block.text);
+      this.setState("speaking", undefined, speech);
+      await this.dependencies.speak(speech);
+    } catch (error) {
+      if (this.current(generation)) {
+        this.fail(error);
+        return;
+      }
+    } finally {
+      if (this.current(generation)) {
+        this.isSpeakingBlock = false;
+        this.refresh();
+      }
+    }
+  }
+
+  private async sayAndListen(text: string, generation: number): Promise<void> {
+    this.isSpeakingBlock = true;
+    try {
+      this.dependencies.playChime?.();
+      const delay = this.dependencies.playChime ? (this.dependencies.chimeDelayMs ?? 300) : 0;
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      if (!this.current(generation)) return;
+
+      this.setState("speaking", undefined, text);
       await this.dependencies.speak(text);
-      if (this.current(generation)) await this.listen(generation);
+      if (this.current(generation)) {
+        this.isSpeakingBlock = false;
+        await this.listen(generation);
+      }
     } catch (error) {
       if (this.current(generation)) this.fail(error);
+    } finally {
+      if (this.current(generation)) {
+        this.isSpeakingBlock = false;
+      }
     }
   }
 

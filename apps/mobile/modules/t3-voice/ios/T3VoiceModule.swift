@@ -34,6 +34,8 @@ public final class T3VoiceModule: Module {
         soundId = 1001 // Sent mail / dispatch ping
       case "reply":
         soundId = 1002 // Received message / chime
+      case "chime":
+        soundId = 1003 // Resonant alert chime for incoming blocks
       default:
         soundId = 1104 // Subtle tap
       }

@@ -19,6 +19,7 @@ function setup() {
   let sequence = 0;
   const listen = vi.fn(() => recording.promise);
   const speak = vi.fn(() => playback.promise);
+  const playChime = vi.fn();
   const send = vi.fn(async (_text: string, _id: string) => {});
   const stopAudio = vi.fn();
   const prepare = vi.fn(async () => {});
@@ -26,6 +27,8 @@ function setup() {
     prepare,
     listen,
     speak,
+    playChime,
+    chimeDelayMs: 0,
     send,
     stopAudio,
     validate: () => blocked,
@@ -49,6 +52,7 @@ function setup() {
     conversation,
     listen,
     speak,
+    playChime,
     send,
     stopAudio,
     prepare,
@@ -72,6 +76,68 @@ function setup() {
 }
 
 describe("phone car mode voice conversation", () => {
+  it("streams and reads response blocks with chimes and updates text as blocks arrive", async () => {
+    const s = setup();
+    const started = s.conversation.start();
+    await s.phase("listening");
+    s.transcript("Explain what you are doing");
+    await started;
+    expect(s.conversation.getSnapshot().phase).toBe("waiting");
+
+    // First block arrives while turn is still running (pending)
+    s.reply({
+      status: "pending",
+      text: "Checking files now.",
+      blocks: [{ id: "b1", text: "Checking files now." }],
+    });
+
+    // Chime is played and text updates immediately to first block
+    expect(s.playChime).toHaveBeenCalledTimes(1);
+    expect(s.conversation.getSnapshot().agentReply).toBe("Checking files now.");
+    expect(s.conversation.getSnapshot().phase).toBe("speaking");
+    expect(s.speak).toHaveBeenCalledWith("Checking files now.");
+
+    // Second block arrives while first block is still speaking
+    s.reply({
+      status: "pending",
+      text: "Checking files now.\n\nEverything looks good.",
+      blocks: [
+        { id: "b1", text: "Checking files now." },
+        { id: "b2", text: "Everything looks good." },
+      ],
+    });
+    // First block still in playback; speak is not called for b2 yet
+    expect(s.speak).toHaveBeenCalledTimes(1);
+
+    // First block finishes playback
+    s.finishPlayback();
+    s.nextPlayback();
+
+    // Now second block starts: second chime, text updates to second block
+    await Promise.resolve();
+    expect(s.playChime).toHaveBeenCalledTimes(2);
+    expect(s.conversation.getSnapshot().agentReply).toBe("Everything looks good.");
+    expect(s.speak).toHaveBeenCalledTimes(2);
+    expect(s.speak).toHaveBeenLastCalledWith("Everything looks good.");
+
+    // Complete the turn and finish playback
+    s.reply({
+      status: "completed",
+      text: "Checking files now.\n\nEverything looks good.",
+      blocks: [
+        { id: "b1", text: "Checking files now." },
+        { id: "b2", text: "Everything looks good." },
+      ],
+    });
+    s.nextRecording();
+    s.finishPlayback();
+
+    // Automatically transitions back to listening
+    await s.phase("listening");
+    expect(s.listen).toHaveBeenCalledTimes(2);
+    s.conversation.pause();
+  });
+
   it("automatically sends speech and listens again only after the matching reply has finished playing", async () => {
     const s = setup();
     const started = s.conversation.start();
