@@ -9,12 +9,15 @@ import * as Application from "expo-application";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { memo, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+
 import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
+  ReduceMotion,
   useAnimatedStyle,
   useDerivedValue,
+  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
@@ -249,7 +252,7 @@ function ConversationPicker() {
           >
             <SymbolView name="checkmark.circle.fill" size={11} tintColor="#A8C5A8" />
             <Text className="text-[11px] font-t3-medium text-zinc-300">
-              v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.2.0"} (b{Application.nativeBuildVersion ?? "2"}) · Glance HUD
+              v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.0"} (b{Application.nativeBuildVersion ?? "3"}) · Glance HUD
             </Text>
           </View>
 
@@ -398,66 +401,183 @@ function InteractiveHeroOrb({
   readonly disabled?: boolean;
 }) {
   const theme = THEME_BY_PHASE[phase];
+  const reducedMotion = useReducedMotion();
   const flashAnim = useSharedValue(0);
 
   useEffect(() => {
+    if (reducedMotion) return;
     flashAnim.value = withSequence(
       withTiming(1, { duration: 150, easing: Easing.out(Easing.ease) }),
       withTiming(0, { duration: 600, easing: Easing.out(Easing.quad) }),
     );
-  }, [phase, flashAnim]);
+  }, [phase, flashAnim, reducedMotion]);
 
   const flashStyle = useAnimatedStyle(() => ({
     opacity: flashAnim.value * 0.45,
     transform: [{ scale: 1 + flashAnim.value * 0.2 }],
   }));
 
-  const wavePhase = useDerivedValue(() =>
-    active
-      ? withRepeat(
-          withTiming(Math.PI * 2, {
-            duration: 1400,
-            easing: Easing.linear,
-          }),
-          -1,
-          false,
-        )
-      : withTiming(0, { duration: 350 }),
-  );
+  const wavePhase = useDerivedValue(() => {
+    if (reducedMotion) return 0;
+    if (phase === "listening") {
+      return withRepeat(
+        withTiming(Math.PI * 2, {
+          duration: 1200,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
+    }
+    if (phase === "speaking") {
+      return withRepeat(
+        withTiming(Math.PI * 2, {
+          duration: 1600,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
+    }
+    if (phase === "sending") {
+      return withRepeat(
+        withTiming(Math.PI * 2, {
+          duration: 800,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
+    }
+    return withTiming(0, { duration: 350 });
+  });
 
-  const haloAnim = useDerivedValue(() =>
-    active
-      ? withRepeat(
-          withSequence(
-            withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
-            withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
-          ),
-          -1,
-          true,
-        )
-      : withRepeat(
-          withSequence(
-            withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
-            withTiming(0, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
-          ),
-          -1,
-          true,
+  const haloAnim = useDerivedValue(() => {
+    if (reducedMotion) return 0;
+    if (phase === "waiting") {
+      return withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
+          withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
         ),
-  );
+        -1,
+        true,
+      );
+    }
+    if (phase === "speaking") {
+      return withRepeat(
+        withSequence(
+          withTiming(1, { duration: 900, easing: Easing.out(Easing.quad) }),
+          withTiming(0, { duration: 900, easing: Easing.in(Easing.quad) }),
+        ),
+        -1,
+        true,
+      );
+    }
+    if (phase === "listening") {
+      return withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.quad) }),
+          withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.quad) }),
+        ),
+        -1,
+        true,
+      );
+    }
+    if (phase === "sending") {
+      return withRepeat(
+        withSequence(
+          withTiming(1, { duration: 400, easing: Easing.out(Easing.cubic) }),
+          withTiming(0, { duration: 400, easing: Easing.in(Easing.cubic) }),
+        ),
+        -1,
+        true,
+      );
+    }
+    return withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 2400, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      true,
+    );
+  });
 
-  const haloAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * (active ? 0.16 : 0.08) }],
-    opacity: active ? 0.35 + haloAnim.value * 0.35 : 0.12 + haloAnim.value * 0.12,
-  }));
+  const haloAnimatedStyle = useAnimatedStyle(() => {
+    const isActive = phase !== "paused" && phase !== "error";
+    return {
+      transform: [{ scale: 1 + haloAnim.value * (isActive ? 0.16 : 0.08) }],
+      opacity: isActive ? 0.35 + haloAnim.value * 0.35 : 0.12 + haloAnim.value * 0.12,
+    };
+  });
 
-  const rippleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + haloAnim.value * (active ? 0.08 : 0.04) }],
-    opacity: active ? 0.4 + haloAnim.value * 0.3 : 0.2,
-  }));
+  const rippleAnimatedStyle = useAnimatedStyle(() => {
+    if (phase === "speaking") {
+      return {
+        transform: [{ scale: 1 + haloAnim.value * 0.22 }],
+        opacity: 0.6 - haloAnim.value * 0.45,
+      };
+    }
+    const isActive = phase !== "paused" && phase !== "error";
+    return {
+      transform: [{ scale: 1 + haloAnim.value * (isActive ? 0.08 : 0.04) }],
+      opacity: isActive ? 0.4 + haloAnim.value * 0.3 : 0.2,
+    };
+  });
 
-  const coreAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: active ? 1 + haloAnim.value * 0.03 : 1 }],
-  }));
+  const coreAnimatedStyle = useAnimatedStyle(() => {
+    if (phase === "waiting") {
+      return { transform: [{ scale: 1 + haloAnim.value * 0.05 }] };
+    }
+    const isActive = phase !== "paused" && phase !== "error";
+    return { transform: [{ scale: isActive ? 1 + haloAnim.value * 0.03 : 1 }] };
+  });
+
+  const renderOrbCenter = () => {
+    if (phase === "listening" || phase === "speaking") {
+      return (
+        <View className="flex-row items-center justify-center" style={{ height: 50 }}>
+          {WAVE_BARS.map((bar) => (
+            <AnimatedHarmonicBar
+              key={bar.id}
+              bar={bar}
+              wavePhase={wavePhase}
+              accent={theme.accent}
+              phase={phase}
+              reducedMotion={reducedMotion}
+            />
+          ))}
+        </View>
+      );
+    }
+    if (phase === "waiting") {
+      return (
+        <View className="items-center justify-center">
+          <SymbolView name="brain" size={42} tintColor={theme.accent} />
+        </View>
+      );
+    }
+    if (phase === "sending") {
+      return (
+        <View className="items-center justify-center">
+          <SymbolView name="arrow.up" size={42} tintColor={theme.accent} />
+        </View>
+      );
+    }
+    if (phase === "error") {
+      return (
+        <View className="items-center justify-center">
+          <SymbolView name="exclamationmark.triangle" size={42} tintColor={theme.accent} />
+        </View>
+      );
+    }
+    return (
+      <View className="items-center justify-center">
+        <SymbolView name="mic" size={42} tintColor="#D4A373" />
+      </View>
+    );
+  };
 
   return (
     <Pressable
@@ -535,25 +655,7 @@ function InteractiveHeroOrb({
         ]}
         className="items-center justify-center"
       >
-        {active ? (
-          /* Dynamic 11-Bar Fluid Equalizer Waveform */
-          <View className="flex-row items-center justify-center" style={{ height: 50 }}>
-            {WAVE_BARS.map((bar) => (
-              <AnimatedHarmonicBar
-                key={bar.id}
-                bar={bar}
-                wavePhase={wavePhase}
-                accent={theme.accent}
-                active={active}
-              />
-            ))}
-          </View>
-        ) : (
-          /* Standby Warm Illuminated Microphone Emblem */
-          <View className="items-center justify-center">
-            <SymbolView name="mic" size={42} tintColor="#D4A373" />
-          </View>
-        )}
+        {renderOrbCenter()}
       </Animated.View>
     </Pressable>
   );
@@ -563,21 +665,40 @@ const AnimatedHarmonicBar = memo(function AnimatedHarmonicBar({
   bar,
   wavePhase,
   accent,
-  active,
+  phase,
+  reducedMotion,
 }: {
   readonly bar: (typeof WAVE_BARS)[number];
   readonly wavePhase: DerivedValue<number>;
   readonly accent: string;
-  readonly active: boolean;
+  readonly phase: VoicePhase;
+  readonly reducedMotion: boolean;
 }) {
   const barStyle = useAnimatedStyle(() => {
-    if (!active) {
+    if (reducedMotion) {
+      return {
+        height: phase === "listening" ? 12 : phase === "speaking" ? 10 : 4,
+        opacity: phase === "listening" || phase === "speaking" ? 0.7 : 0.35,
+      };
+    }
+    if (phase !== "listening" && phase !== "speaking") {
       return {
         height: 4,
         opacity: 0.35,
       };
     }
     const oscillation = Math.sin(wavePhase.value + bar.phaseOffset);
+
+    if (phase === "speaking") {
+      const edgeFactor = 1 - bar.envelope / 1.85;
+      const normalized = 0.3 + 0.7 * Math.abs(oscillation);
+      const height = 8 + normalized * (0.4 + edgeFactor * 0.6) * 22;
+      return {
+        height,
+        opacity: 0.5 + normalized * 0.5,
+      };
+    }
+
     const normalized = 0.25 + 0.75 * Math.abs(oscillation);
     const height = 6 + normalized * bar.envelope * 18;
     return {
@@ -659,6 +780,21 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
   const activeActivity = resolveActiveAgentActivity(thread?.projection?.turnItems);
   const isTurnActive = state.phase === "waiting" || state.phase === "speaking";
 
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (state.phase !== "waiting") {
+      setElapsedSeconds(0);
+      return;
+    }
+    const start = Date.now();
+    setElapsedSeconds(0);
+    const interval = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [state.phase, activeActivity?.label]);
+
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(theme.title);
   }, [theme.title]);
@@ -732,7 +868,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               }}
             />
             <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-400">
-              CAR MODE · v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.2.0"} (b{Application.nativeBuildVersion ?? "2"})
+              CAR MODE · v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.0"} (b{Application.nativeBuildVersion ?? "3"})
             </Text>
           </View>
           <Text
@@ -809,9 +945,11 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                     {activeActivity?.isReasoning ? "Reasoning" : "Active Tool Action"}
                   </Text>
                 </View>
-                <View className="flex-row items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 border border-amber-500/20">
+                <View className="flex-row items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 border border-amber-500/20">
                   <View className="h-1.5 w-1.5 rounded-full bg-[#D4A373]" />
-                  <Text className="text-[10px] font-t3-medium text-[#D4A373]">Running</Text>
+                  <Text className="text-[10px] font-t3-medium text-[#D4A373]">
+                    {elapsedSeconds > 0 ? `Running · ${elapsedSeconds}s` : "Running"}
+                  </Text>
                 </View>
               </View>
               <Text
