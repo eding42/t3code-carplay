@@ -124,6 +124,7 @@ export class VoiceConversation {
       this.pendingMessage = null;
       this.spokenBlockIds.clear();
       this.isSpeakingBlock = false;
+      this.dependencies.stopAudio();
       const generation = this.generation;
       void this.announceAndPause(
         reply.status === "blocked"

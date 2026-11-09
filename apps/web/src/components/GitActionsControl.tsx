@@ -622,11 +622,16 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
             summaries={publishWizardStepSummaries}
             showSummaries
             isStepDisabled={(index) =>
+              publishRepositoryAction.isPending ||
               publishWizardStep === 2 ||
               index >= publishWizardSteps.length - 1 ||
               index > publishWizardStep
             }
-            onStepChange={setPublishWizardStep}
+            onStepChange={(step) => {
+              if (!publishRepositoryAction.isPending) {
+                setPublishWizardStep(step);
+              }
+            }}
           />
         </WizardHeader>
 

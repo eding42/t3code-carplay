@@ -261,6 +261,7 @@ describe("phone car mode voice conversation", () => {
       s.transcript("Run the tests");
       await started;
       s.reply({ status, text: "" });
+      expect(s.stopAudio).toHaveBeenCalled();
       expect(s.speak).toHaveBeenCalledTimes(1);
       s.finishPlayback();
       await s.phase("error");
