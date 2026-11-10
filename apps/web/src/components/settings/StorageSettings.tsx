@@ -64,9 +64,7 @@ export function WorktreesDirectoryRow() {
   return (
     <SettingsRow
       {...searchableSetting("storage-worktrees-location")}
-      description={
-        "Folder where new worktrees are created, on any drive, such as D:\\worktrees or ~/worktrees. Existing worktrees stay where they are. Leave empty to use the T3 home folder."
-      }
+      description={"Folder where new worktrees are created. Leave empty for the default location."}
       serverScoped
       settingKeys={["worktreesDirectory"]}
       resetAction={

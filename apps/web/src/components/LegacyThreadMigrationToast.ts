@@ -18,7 +18,7 @@ export function startLegacyThreadMigrationToast(): () => void {
           title: "Restoring your threads…",
           description: `Migrating ${migration.totalThreadCount.toLocaleString()} ${
             migration.totalThreadCount === 1 ? "thread" : "threads"
-          } from the previous version. You can keep working while this finishes.`,
+          }.`,
           timeout: 0,
         });
         return;

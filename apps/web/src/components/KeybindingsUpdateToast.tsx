@@ -16,7 +16,6 @@ export function startKeybindingsUpdateToasts(): () => void {
       toastManager.add({
         type: "success",
         title: "Keybindings updated",
-        description: "Keybindings configuration reloaded successfully.",
       });
       return;
     }

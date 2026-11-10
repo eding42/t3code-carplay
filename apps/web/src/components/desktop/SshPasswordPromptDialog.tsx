@@ -158,9 +158,7 @@ function ActiveSshPasswordPrompt({
         <DialogHeader>
           <DialogTitle>SSH verification required</DialogTitle>
           <DialogDescription>
-            Enter the password or verification code required by <code>{target}</code>. T3 Code
-            passes your response to the local SSH process and keeps it in memory to reuse for this
-            host. T3 Code does not write it to disk.
+            Enter the password or verification code required by <code>{target}</code>.
           </DialogDescription>
         </DialogHeader>
         <DialogPanel scrollFade={false}>
@@ -199,12 +197,7 @@ function ActiveSshPasswordPrompt({
             </div>
             {visibleResponseError ? (
               <p className="text-sm text-destructive">{visibleResponseError}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                SSH keys may replace a password, but your server can still require a verification
-                code.
-              </p>
-            )}
+            ) : null}
           </form>
         </DialogPanel>
         <DialogFooter>
