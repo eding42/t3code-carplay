@@ -75,6 +75,33 @@ The most common defect in this repo is a change that works on the path you teste
 - **Connection modes.** Local, remote/relay, and tunnel behave differently. Multi-device and multi-environment cases are real.
 - **Docs.** Check whether the change makes existing guidance inaccurate. Apply the [documentation rules](#documentation) before adding anything.
 
+## Skills
+
+Specialized, repeatable agent workflows are maintained as standardized **skills** in `.agents/skills/<name>/SKILL.md`.
+
+Skills are **cross-platform**:
+
+- **Portable format**: Standard YAML frontmatter (`name`, `description`) and runtime-neutral markdown instructions.
+- **Multi-agent discovery**: Symlinked into `.claude/skills`, `.codex/skills`, and `.gemini/skills`, and bridged into `.cursor/rules/skills.mdc`. Whether running under T3 Code, Claude Code, Codex, Cursor, Antigravity, OpenCode, or an outside agent via MCP, skills resolve to the same canonical files in `.agents/skills/`.
+- **Cross-OS**: Workflows use platform-agnostic tools (`vp`, `npx pnpm`, ripgrep, git) compatible across macOS, Linux, and Windows (WSL).
+
+Before performing a task covered by a skill, **you must read its `SKILL.md` file**:
+
+| Skill                              | Canonical path                                                                                                 | Purpose & trigger                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`clean-copy`**                   | [`.agents/skills/clean-copy/SKILL.md`](.agents/skills/clean-copy/SKILL.md)                                     | Cut interface copy that shouldn't exist — captions restating labels, hints pre-empting worries, bug scar tissue. Use whenever writing or reviewing any user-facing string (labels, hints, empty states, toasts, dialogs, buttons). Walk the copy ladder: if it fails, delete it.                                                 |
+| **`find-implicit-state-machines`** | [`.agents/skills/find-implicit-state-machines/SKILL.md`](.agents/skills/find-implicit-state-machines/SKILL.md) | Audit codebase for implicit, emergent state machines governed by boolean flag clusters, scattered status mutations, and unmodeled async transitions. Follows the 6-step audit process (map, search, trace, cluster, analyze, classify) and ranks fixes via the 4-level hierarchy (delete/derive → union → reducer → formal FSM). |
+| **`test-t3-app`**                  | [`.agents/skills/test-t3-app/SKILL.md`](.agents/skills/test-t3-app/SKILL.md)                                   | Test T3 Code's web and desktop UI through the built-in Browser panel against isolated SQLite test state. Use for browser verification, pairing token recovery, and UI regression proof.                                                                                                                                          |
+| **`test-t3-mobile`**               | [`.agents/skills/test-t3-mobile/SKILL.md`](.agents/skills/test-t3-mobile/SKILL.md)                             | Test native iOS and Android apps through the Device panel and returned `AgentDevice` commands against an isolated backend. Covers native fingerprint checks, Metro pairing, and physical/simulator testing.                                                                                                                      |
+| **`contribution-triage`**          | [`.agents/skills/contribution-triage/SKILL.md`](.agents/skills/contribution-triage/SKILL.md)                   | Enforce T3 Code's PR contribution policy (`CONTRIBUTING.md`). Close ineligible submissions with concrete violations and route eligible work to Macroscope review.                                                                                                                                                                |
+
+### Adding or modifying skills
+
+1. **One directory per skill**: Place in `.agents/skills/<skill-name>/SKILL.md`.
+2. **Standard frontmatter**: Every skill must begin with valid YAML frontmatter containing `name` and `description` (indexed by harnesses for automated skill routing).
+3. **Keep them lean**: Focus on operational protocols, rubrics, and traps. Do not duplicate repo-wide architecture documented elsewhere.
+4. **Platform neutrality**: Avoid provider-specific lock-in or OS-exclusive shell commands; ensure any agent harness can execute the instructions.
+
 ## Dev servers
 
 - `vp i` installs. Worktrees get this from the t3.json setup script; if module resolution looks broken, it probably did not run.
@@ -184,6 +211,7 @@ Architecture and its constraints: `docs/internals/overview.md`. Glossary: `docs/
 - `packages/contracts` - Effect/Schema contracts plus small derived helpers. No heavy runtime logic.
 - `packages/shared` - shared runtime utils, subpath exports, no barrel.
 - `packages/client-runtime` - client code shared by web and mobile.
+- `.agents/skills` - cross-platform agent skills (symlinked for Claude Code, Codex, Gemini; bridged to Cursor rules).
 - `.repos/` - vendored read-only references. Prefer their patterns over invented ones. Never edit or import from them. Sync with `vpr sync:repos` when bumping the matching dependency. If it is missing (sparse checkout), read a file with `git show origin/main:.repos/<path>`.
 
 ## Taste

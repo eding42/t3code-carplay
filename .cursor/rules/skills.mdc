@@ -1,0 +1,20 @@
+---
+description: Repository skills guide for Cursor agents (clean-copy, find-implicit-state-machines, test-t3-app, test-t3-mobile, contribution-triage)
+alwaysApply: true
+---
+
+# Agent Skills in T3 Code
+
+This repository provides standardized, cross-platform skills located in `.agents/skills/`. Each skill contains a `SKILL.md` instruction file with execution workflows, constraints, and rubrics.
+
+When performing tasks matching the following areas, read and follow the corresponding skill document:
+
+| Skill | Path | When to use |
+|---|---|---|
+| **`clean-copy`** | [`.agents/skills/clean-copy/SKILL.md`](mdc:.agents/skills/clean-copy/SKILL.md) | Writing or reviewing user-facing copy (labels, captions, toasts, dialogs, buttons, empty states). Enforces the copy deletion ladder and eliminates scar-tissue explanations. |
+| **`find-implicit-state-machines`** | [`.agents/skills/find-implicit-state-machines/SKILL.md`](mdc:.agents/skills/find-implicit-state-machines/SKILL.md) | Auditing state complexity, boolean flag clusters, scattered status mutations, or hunting concurrency/deadlock/race condition bugs across server, web, desktop, and mobile. |
+| **`test-t3-app`** | [`.agents/skills/test-t3-app/SKILL.md`](mdc:.agents/skills/test-t3-app/SKILL.md) | Verifying web and desktop UI through the built-in Browser panel and isolated SQLite test state. |
+| **`test-t3-mobile`** | [`.agents/skills/test-t3-mobile/SKILL.md`](mdc:.agents/skills/test-t3-mobile/SKILL.md) | Verifying native iOS & Android applications via Device panel, AgentDevice command, and Metro. |
+| **`contribution-triage`** | [`.agents/skills/contribution-triage/SKILL.md`](mdc:.agents/skills/contribution-triage/SKILL.md) | Enforcing contribution eligibility policy and routing eligible PRs to Macroscope review. |
+
+Skills are also symlinked for other agent platforms (`.claude/skills`, `.codex/skills`, `.gemini/skills`).
