@@ -8,7 +8,7 @@ import { NoProjectsHero } from "../components/NoProjectsHero";
 import { sortScopedProjectsForSidebar } from "../components/Sidebar.logic";
 import { Button } from "../components/ui/button";
 import { HostedEmptyState } from "../components/HostedEmptyState";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../components/ui/empty";
+import { Empty, EmptyHeader, EmptyTitle } from "../components/ui/empty";
 import { SidebarInset } from "../components/ui/sidebar";
 import { WorkspacePageHeader } from "../components/WorkspacePageHeader";
 import { useNewThreadHandler } from "../hooks/useHandleNewThread";
@@ -31,6 +31,8 @@ function ChatIndexRouteView() {
 
   return <IndexDraftLanding />;
 }
+
+const MAX_DRAFT_START_RETRIES = 3;
 
 function IndexDraftLanding() {
   const projects = useProjects();
@@ -60,7 +62,11 @@ function IndexDraftLanding() {
     void handleNewThread(projectRef, { replace: true })
       .then((opened) => {
         if (opened === null) {
-          setStartState((state) => ({ ...state, retryRequest: state.retryRequest + 1 }));
+          setStartState((state) =>
+            state.retryRequest >= MAX_DRAFT_START_RETRIES
+              ? { ...state, failed: true }
+              : { ...state, retryRequest: state.retryRequest + 1 },
+          );
         }
       })
       .catch(() => {
@@ -72,10 +78,10 @@ function IndexDraftLanding() {
     return startState.failed ? (
       <DraftStartError
         onRetry={() => {
-          setStartState((state) => ({
+          setStartState({
             failed: false,
-            retryRequest: state.retryRequest + 1,
-          }));
+            retryRequest: 0,
+          });
         }}
       />
     ) : null;

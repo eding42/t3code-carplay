@@ -2034,6 +2034,48 @@ it.effect("cancels tracked setup before provider work is released", () =>
   }),
 );
 
+it.effect(
+  "removes created worktree when tracked setup fails before provider work is released",
+  () =>
+    Effect.gen(function* () {
+      const harness = makeHarness({
+        runSetup: () =>
+          Effect.succeed({
+            status: "started" as const,
+            async: false,
+            scriptId: "setup",
+            scriptName: "Setup",
+            scriptCommand: "vp install",
+            terminalId: "setup",
+            cwd: "/repo-worktrees/feature",
+            completion: Effect.succeed({ exitCode: 1, durationMs: 15 }),
+          }),
+      });
+      yield* Effect.gen(function* () {
+        const launches = yield* ThreadLaunch.ThreadLaunchService;
+        const tracker = yield* WorktreeSetupTracker.WorktreeSetupTracker;
+        const threads = yield* ThreadManagement.ThreadManagementService;
+        const outbox = yield* EffectOutbox.EffectOutboxV2;
+        const input = launchInput({
+          command: "launch:fail-tracked",
+          thread: "thread:fail-tracked",
+          message: "Start",
+          workspace: { type: "worktree", baseRef: "main" },
+        });
+        const launched = yield* launches.launch(input);
+        yield* tracker.stream(launched.threadId).pipe(
+          Stream.filter((snapshot) => snapshot?.phase === "failed"),
+          Stream.runHead,
+        );
+        const projection = yield* threads.getThreadProjection(launched.threadId);
+        assert.equal(projection.runs[0]?.status, "failed");
+        assert.isNull(projection.thread.worktreePath);
+        assert.equal(harness.removeWorktree.mock.calls.length, 1);
+        assert.isEmpty(yield* outbox.listByCommandId(CommandId.make(`${input.commandId}:release`)));
+      }).pipe(Effect.provide(harness.layer));
+    }),
+);
+
 it.effect("stops an in-flight branch rename when tracked setup is cancelled", () =>
   Effect.gen(function* () {
     const setupEntered = yield* Deferred.make<void>();

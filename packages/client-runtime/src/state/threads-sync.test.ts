@@ -1803,6 +1803,35 @@ describe("EnvironmentThreads", () => {
     }),
   );
 
+  it.effect("recovers from a stream error to live state via synchronized", () =>
+    Effect.gen(function* () {
+      const harness = yield* makeHarness({ cached: BASE_PROJECTION });
+      yield* Queue.offer(harness.inputs, snapshot(BASE_PROJECTION));
+      yield* Queue.offer(harness.inputs, new Error("transient disconnect"));
+
+      const failed = yield* awaitThreadState(harness.observed, (value) =>
+        Option.isSome(value.error),
+      );
+      expect(Option.getOrThrow(failed.error)).toBe("transient disconnect");
+
+      yield* harness.replaceSession;
+      yield* SubscriptionRef.changes(harness.subscriptionCount).pipe(
+        Stream.filter((count) => count >= 2),
+        Stream.runHead,
+      );
+
+      // Reconnected and received synchronized marker without a full replacement snapshot
+      yield* Queue.offer(harness.inputs, synchronized());
+      const recovered = yield* awaitThreadState(
+        harness.observed,
+        (value) => value.status === "live",
+      );
+
+      expect(recovered.status).toBe("live");
+      expect(Option.isNone(recovered.error)).toBe(true);
+    }),
+  );
+
   it.effect("keeps replayed updates synchronizing until the completion marker arrives", () =>
     Effect.gen(function* () {
       const harness = yield* makeHarness({ cached: BASE_PROJECTION, completionMarker: true });

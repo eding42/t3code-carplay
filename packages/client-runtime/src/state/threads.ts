@@ -356,7 +356,7 @@ export const makeEnvironmentThreadState = Effect.fn("EnvironmentThreadState.make
   yield* runCachePersistence(persistence, persist).pipe(Effect.forkScoped);
 
   const setConnecting = SubscriptionRef.update(state, (current) =>
-    current.status === "deleted" || Option.isSome(current.error)
+    current.status === "deleted"
       ? current
       : {
           ...current,
@@ -365,7 +365,7 @@ export const makeEnvironmentThreadState = Effect.fn("EnvironmentThreadState.make
         },
   );
   const setReady = SubscriptionRef.update(state, (current) =>
-    current.status === "live" || current.status === "deleted" || Option.isSome(current.error)
+    current.status === "live" || current.status === "deleted"
       ? current
       : {
           ...current,
@@ -598,7 +598,7 @@ export const makeEnvironmentThreadState = Effect.fn("EnvironmentThreadState.make
     if (item.kind === "synchronized") {
       yield* Ref.set(awaitingCompletion, false);
       yield* SubscriptionRef.update(state, (current) =>
-        Option.isSome(current.data) && current.status !== "deleted" && Option.isNone(current.error)
+        Option.isSome(current.data) && current.status !== "deleted"
           ? { ...current, status: "live" as const, error: Option.none() }
           : current,
       );

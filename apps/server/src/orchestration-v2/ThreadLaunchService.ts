@@ -665,11 +665,7 @@ const make = Effect.gen(function* () {
             yield* terminals
               .close({ threadId, terminalId: setupTerminalId, deleteHistory: true })
               .pipe(Effect.ignore);
-          if (
-            tracked &&
-            createdWorktreePath &&
-            ((cancelled && !runReleased) || !workspaceRecorded)
-          ) {
+          if (tracked && createdWorktreePath && (!runReleased || !workspaceRecorded)) {
             if (branchRename !== null) yield* Fiber.interrupt(branchRename);
             const removedPath = createdWorktreePath;
             // Forget worktrees only after removal succeeds; failed removals must not reuse partially written checkouts.
