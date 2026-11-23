@@ -19,7 +19,6 @@ import { lucideIconByName } from "../../lib/lucideIconByName";
 import { Button } from "../ui/button";
 import {
   Dialog,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogPanel,
@@ -119,7 +118,6 @@ function ProjectIconPickerBody({
     <>
       <DialogHeader>
         <DialogTitle>Choose project icon</DialogTitle>
-        <DialogDescription>Choose an icon, emoji, or monogram.</DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex min-h-0 flex-col">
         <ToggleGroup

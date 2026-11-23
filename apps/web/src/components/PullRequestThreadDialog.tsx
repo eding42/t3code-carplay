@@ -162,7 +162,7 @@ export function PullRequestThreadDialog({
       worktreePath: result.value.worktreePath,
     });
     if (!result.value.isOnPullRequestHead) {
-      toastManager.add(offHeadPullRequestCheckoutToast(terminology));
+      toastManager.add(offHeadPullRequestCheckoutToast());
     }
     onOpenChange(false);
   };

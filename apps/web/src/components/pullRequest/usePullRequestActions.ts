@@ -389,7 +389,7 @@ export function usePullRequestHandoffs({
                   ? `This repository is on the ${terminology.singular}'s branch, with a thread open on it.`
                   : `The ${terminology.singular} is in its own worktree, with a thread open on it.`,
             }
-          : offHeadPullRequestCheckoutToast(terminology),
+          : offHeadPullRequestCheckoutToast(),
       );
       return;
     }
@@ -402,7 +402,7 @@ export function usePullRequestHandoffs({
             title: "Checkout ready",
             description: "The task is in the composer. Read it over, then send.",
           }
-        : offHeadPullRequestCheckoutToast(terminology),
+        : offHeadPullRequestCheckoutToast(),
     );
   };
 

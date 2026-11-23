@@ -1,15 +1,19 @@
 import { useAtomValue } from "@effect/atom-react";
-import {
-  CommonActions,
-  useNavigation,
-  type StaticScreenProps,
-} from "@react-navigation/native";
+import { CommonActions, useNavigation, type StaticScreenProps } from "@react-navigation/native";
 import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
 import * as Application from "expo-application";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
@@ -38,9 +42,8 @@ import { resolveActiveAgentActivity } from "./voiceProjection";
 const THEME_BY_PHASE: Record<
   VoicePhase,
   {
-    badge: string;
     title: string;
-    subtitle: string;
+    subtitle?: string;
     glowStart: string;
     glowMid: string;
     accent: string;
@@ -49,9 +52,8 @@ const THEME_BY_PHASE: Record<
   }
 > = {
   paused: {
-    badge: "READY",
     title: "Tap to Speak",
-    subtitle: "Hands-free voice assistant on standby",
+    subtitle: "Sends after 2 seconds of silence.",
     glowStart: "rgba(212, 163, 115, 0.12)",
     glowMid: "rgba(212, 163, 115, 0.03)",
     accent: "#D4A373",
@@ -59,9 +61,7 @@ const THEME_BY_PHASE: Record<
     icon: "mic",
   },
   preparing: {
-    badge: "INITIALIZING",
     title: "Starting Up…",
-    subtitle: "Configuring on-device audio engine",
     glowStart: "rgba(229, 169, 103, 0.16)",
     glowMid: "rgba(229, 169, 103, 0.04)",
     accent: "#E5A967",
@@ -69,9 +69,8 @@ const THEME_BY_PHASE: Record<
     icon: "headphones",
   },
   listening: {
-    badge: "LISTENING",
     title: "Listening…",
-    subtitle: "Speak naturally · 2s pause auto-sends",
+    subtitle: "Sends after 2 seconds of silence.",
     glowStart: "rgba(229, 169, 103, 0.22)",
     glowMid: "rgba(229, 169, 103, 0.05)",
     accent: "#E5A967",
@@ -79,9 +78,7 @@ const THEME_BY_PHASE: Record<
     icon: "mic",
   },
   sending: {
-    badge: "DELIVERING",
     title: "Delivering…",
-    subtitle: "Transmitting prompt to agent",
     glowStart: "rgba(203, 187, 173, 0.18)",
     glowMid: "rgba(203, 187, 173, 0.04)",
     accent: "#CBBBAD",
@@ -89,9 +86,7 @@ const THEME_BY_PHASE: Record<
     icon: "arrow.up",
   },
   waiting: {
-    badge: "THINKING",
     title: "Thinking…",
-    subtitle: "Reviewing workspace & running tools",
     glowStart: "rgba(212, 163, 115, 0.20)",
     glowMid: "rgba(212, 163, 115, 0.04)",
     accent: "#D4A373",
@@ -99,9 +94,7 @@ const THEME_BY_PHASE: Record<
     icon: "brain",
   },
   speaking: {
-    badge: "SPEAKING",
     title: "Speaking…",
-    subtitle: "Streaming response through car audio",
     glowStart: "rgba(168, 197, 168, 0.20)",
     glowMid: "rgba(168, 197, 168, 0.04)",
     accent: "#A8C5A8",
@@ -109,7 +102,6 @@ const THEME_BY_PHASE: Record<
     icon: "headphones",
   },
   error: {
-    badge: "PAUSED",
     title: "Attention Needed",
     subtitle: "Review details safely when parked",
     glowStart: "rgba(244, 114, 114, 0.16)",
@@ -163,9 +155,8 @@ export function DrivingModeScreen({
         style={{ backgroundColor: "#0A0A0C" }}
       >
         <SymbolView name="iphone" size={48} tintColor="#71717A" />
-        <Text className="mt-4 text-center text-lg font-t3-bold text-[#F4F4F6]">iPhone Only</Text>
-        <Text className="mt-2 text-center text-zinc-400">
-          Car mode hands-free voice chat is available on iPhone.
+        <Text className="mt-4 text-center text-lg font-t3-bold text-[#F4F4F6]">
+          Car Mode requires an iPhone.
         </Text>
       </View>
     );
@@ -237,8 +228,7 @@ function ConversationPicker() {
           </View>
           <Text className="text-2xl font-t3-bold tracking-tight text-[#F4F4F6]">Car Mode</Text>
           <Text className="mt-2 text-center text-sm font-t3-normal text-zinc-400 max-w-xs leading-6">
-            Hands-free voice assistant built for driving. Continuous conversational coding with
-            automatic pause detection.
+            Talk to your agent hands-free.
           </Text>
 
           {/* Version / Release Pill */}
@@ -252,7 +242,8 @@ function ConversationPicker() {
           >
             <SymbolView name="checkmark.circle.fill" size={11} tintColor="#A8C5A8" />
             <Text className="text-[11px] font-t3-medium text-zinc-300">
-              v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.0"} (b{Application.nativeBuildVersion ?? "3"}) · Glance HUD
+              v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.2"} (b
+              {Application.nativeBuildVersion ?? Constants.expoConfig?.ios?.buildNumber ?? "5"})
             </Text>
           </View>
 
@@ -868,7 +859,9 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
               }}
             />
             <Text className="text-[10px] font-t3-bold uppercase tracking-widest text-zinc-400">
-              CAR MODE · v{Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.0"} (b{Application.nativeBuildVersion ?? "3"})
+              CAR MODE · v
+              {Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? "2.3.2"} (b
+              {Application.nativeBuildVersion ?? Constants.expoConfig?.ios?.buildNumber ?? "5"})
             </Text>
           </View>
           <Text
@@ -913,9 +906,11 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         >
           {theme.title}
         </Text>
-        <Text className="mt-1 text-center text-sm font-t3-normal text-zinc-400 leading-5">
-          {state.phase === "waiting" ? "Running workspace tools…" : theme.subtitle}
-        </Text>
+        {theme.subtitle ? (
+          <Text className="mt-1 text-center text-sm font-t3-normal text-zinc-400 leading-5">
+            {theme.subtitle}
+          </Text>
+        ) : null}
 
         {/* Single-Focus Phase Cards (Eliminates Vertical Layout Overflow) */}
         <View className="mt-4 w-full max-w-sm">
@@ -952,10 +947,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                   </Text>
                 </View>
               </View>
-              <Text
-                className="text-[19px] font-t3-bold text-white leading-7"
-                numberOfLines={2}
-              >
+              <Text className="text-[19px] font-t3-bold text-white leading-7" numberOfLines={2}>
                 {activeActivity ? activeActivity.label : "Thinking through workspace…"}
               </Text>
             </View>
@@ -971,23 +963,6 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                 borderColor: "rgba(168, 197, 168, 0.38)",
               }}
             >
-              <View className="flex-row items-center justify-between mb-2">
-                <View className="flex-row items-center gap-2">
-                  <View
-                    className="h-6 w-6 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "rgba(168, 197, 168, 0.2)" }}
-                  >
-                    <SymbolView name="headphones" size={12} tintColor="#A8C5A8" />
-                  </View>
-                  <Text className="text-[11px] font-t3-bold uppercase tracking-wider text-[#A8C5A8]">
-                    Agent Speaking
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 border border-emerald-500/30">
-                  <View className="h-1.5 w-1.5 rounded-full bg-[#A8C5A8]" />
-                  <Text className="text-[10px] font-t3-medium text-[#A8C5A8]">Speaking</Text>
-                </View>
-              </View>
               <Text
                 className="text-[19px] font-t3-medium text-white leading-7"
                 numberOfLines={4}
@@ -1021,10 +996,7 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
                   </Text>
                 </View>
               </View>
-              <Text
-                className="text-[20px] font-t3-medium text-white leading-7"
-                numberOfLines={3}
-              >
+              <Text className="text-[20px] font-t3-medium text-white leading-7" numberOfLines={3}>
                 “{latestUserPrompt}”
               </Text>
             </View>
@@ -1091,10 +1063,8 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
         ) : null}
       </View>
 
-      {/* Bottom Bar: Action-Aware (No duplicate mic) */}
-      <View className="px-6 pb-2 items-center w-full">
-        {isTurnActive ? (
-          /* Prominent Stop Button when agent turn is active */
+      {isTurnActive ? (
+        <View className="px-6 pb-2 items-center w-full">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Stop agent"
@@ -1109,23 +1079,8 @@ function VoiceControls({ threadRef }: { readonly threadRef: ScopedThreadRef }) {
             <SymbolView name="stop.fill" size={18} tintColor="#F87171" />
             <Text className="text-base font-t3-bold text-rose-300">Stop Agent</Text>
           </Pressable>
-        ) : (
-          /* Minimalist status badge when idle */
-          <View
-            className="flex-row items-center gap-2 rounded-full px-4 py-2"
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.04)",
-              borderWidth: 1,
-              borderColor: "rgba(255, 255, 255, 0.08)",
-            }}
-          >
-            <SymbolView name="sparkles" size={12} tintColor="#D4A373" />
-            <Text className="text-xs font-t3-medium text-zinc-400">
-              Tap orb to speak · Auto-sends on pause
-            </Text>
-          </View>
-        )}
-      </View>
+        </View>
+      ) : null}
     </View>
   );
 }

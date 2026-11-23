@@ -458,12 +458,10 @@ function ImportingStep() {
     <>
       <DialogHeader>
         <DialogTitle>Importing cookies</DialogTitle>
-        <DialogDescription>This may take a moment.</DialogDescription>
       </DialogHeader>
       <DialogPanel>
-        <div className="flex items-center gap-3 py-2">
+        <div className="py-2">
           <Spinner size="md" tone="muted" />
-          <span className="text-sm text-muted-foreground">Importing…</span>
         </div>
       </DialogPanel>
     </>

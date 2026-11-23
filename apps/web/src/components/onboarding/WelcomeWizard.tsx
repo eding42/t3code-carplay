@@ -669,10 +669,7 @@ function AgentsStep({
 }) {
   const { environments } = useEnvironments();
   return (
-    <StepShell
-      title="Connect your agents"
-      description="Choose an agent to start coding. You can add more later."
-    >
+    <StepShell title="Connect your agents" description="You can add more agents in Settings.">
       <ScrollArea scrollFade className="mt-5 h-auto max-h-[min(32rem,55dvh)]">
         <div className="space-y-5 pr-3">
           {environmentIds.map((environmentId) => (

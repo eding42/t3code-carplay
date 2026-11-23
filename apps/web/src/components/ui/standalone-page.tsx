@@ -54,7 +54,7 @@ export function StandalonePageHeader({
 }: {
   readonly eyebrow: ReactNode;
   readonly title: ReactNode;
-  readonly description: ReactNode;
+  readonly description?: ReactNode;
 }) {
   return (
     <>
@@ -62,7 +62,9 @@ export function StandalonePageHeader({
         {eyebrow}
       </p>
       <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      {description ? (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      ) : null}
     </>
   );
 }

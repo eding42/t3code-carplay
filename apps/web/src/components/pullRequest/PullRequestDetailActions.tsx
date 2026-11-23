@@ -124,9 +124,7 @@ export function PullRequestCheckoutMenu({
           <GitBranchIcon className="mt-1 size-3.5 shrink-0 self-start" />
           <span className="flex min-w-0 flex-col">
             <span>In a separate worktree</span>
-            <span className="text-xs text-muted-foreground">
-              Its own folder and thread. Nothing you have open moves.
-            </span>
+            <span className="text-xs text-muted-foreground">Creates a new thread.</span>
           </span>
         </MenuItem>
         <MenuItem disabled={!canCheckoutHere} onClick={() => onCheckout("local")}>

@@ -139,10 +139,7 @@ export function ConnectAgentSurface() {
   if (loaded.status === "loading") {
     return (
       <AuthSurfaceShell>
-        <ConnectAgentHeading
-          title="Checking the sign-in request"
-          description="One moment while this environment verifies the agent's request."
-        />
+        <ConnectAgentHeading title="Checking the sign-in request" />
         <Spinner className="mt-6" size="lg" tone="muted" />
       </AuthSurfaceShell>
     );
@@ -268,13 +265,15 @@ function ConnectAgentHeading({
   description,
 }: {
   readonly title: string;
-  readonly description: ReactNode;
+  readonly description?: ReactNode;
 }) {
   return (
     <>
       <p className="text-3xs font-semibold tracking-widest text-primary uppercase">Agent sign-in</p>
       <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      {description ? (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      ) : null}
     </>
   );
 }

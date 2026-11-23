@@ -298,7 +298,6 @@ function useThreadGitHeaderActionItems(props: ThreadGitControlsProps): ThreadGit
           ...(props.projectScripts.length === 0
             ? [
                 {
-                  description: "This project has no saved scripts yet",
                   disabled: true,
                   icon: { name: "play", type: "sfSymbol" as const },
                   label: "No project scripts",
@@ -323,7 +322,6 @@ function useThreadGitHeaderActionItems(props: ThreadGitControlsProps): ThreadGit
             type: "action" as const,
           })),
           {
-            description: "Start another shell for this thread",
             disabled: !props.canOperateTerminal,
             icon: { name: "plus", type: "sfSymbol" },
             label: "Open new terminal",
@@ -465,12 +463,7 @@ export function ThreadGitControls(props: ThreadGitControlsProps) {
               </Toolbar.MenuAction>
             ))
           ) : (
-            <Toolbar.MenuAction
-              icon="play"
-              disabled
-              onPress={() => {}}
-              subtitle="This project has no saved scripts yet"
-            >
+            <Toolbar.MenuAction icon="play" disabled onPress={() => {}}>
               <Toolbar.Label>No project scripts</Toolbar.Label>
             </Toolbar.MenuAction>
           )}
@@ -496,7 +489,6 @@ export function ThreadGitControls(props: ThreadGitControlsProps) {
             icon="plus"
             disabled={!props.canOperateTerminal}
             onPress={props.onOpenNewTerminal}
-            subtitle="Start another shell for this thread"
           >
             <Toolbar.Label>Open new terminal</Toolbar.Label>
           </Toolbar.MenuAction>

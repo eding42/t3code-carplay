@@ -696,7 +696,6 @@ function BrowserSearchEngineSetting() {
     <>
       <SettingsRow
         {...searchableSetting("browser-search-engine")}
-        description="What the address bar searches when you type something that isn't a URL."
         resetAction={
           engine !== DEFAULT_BROWSER_SEARCH_ENGINE || customUrl !== "" ? (
             <SettingResetButton
@@ -769,7 +768,6 @@ export function PullRequestLinksOpenInAppSetting() {
   return (
     <SettingsRow
       {...searchableSetting("pull-request-links-open-in-app")}
-      description="Clicking a pull request link opens it in T3 Code."
       resetAction={
         openInApp ? null : (
           <SettingResetButton

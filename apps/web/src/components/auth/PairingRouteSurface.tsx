@@ -19,11 +19,7 @@ import { useAtomCommand } from "../../state/use-atom-command";
 export function PairingPendingSurface() {
   return (
     <StandalonePage tone="pairing">
-      <StandalonePageHeader
-        eyebrow={APP_DISPLAY_NAME}
-        title="Pairing with this environment"
-        description="Validating the pairing link and preparing your session."
-      />
+      <StandalonePageHeader eyebrow={APP_DISPLAY_NAME} title="Pairing with this environment" />
     </StandalonePage>
   );
 }

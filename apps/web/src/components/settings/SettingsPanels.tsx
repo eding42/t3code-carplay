@@ -2006,11 +2006,7 @@ export function AboutSettingsPanel() {
           <AboutVersionSection />
         ) : (
           <>
-            <SettingsRow
-              id={searchableSetting("app-version").id}
-              title={<AboutVersionTitle />}
-              description="Current version of the application."
-            />
+            <SettingsRow id={searchableSetting("app-version").id} title={<AboutVersionTitle />} />
           </>
         )}
         <MobileAppSettingsRow />

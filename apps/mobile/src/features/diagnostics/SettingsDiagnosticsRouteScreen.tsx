@@ -99,11 +99,7 @@ export function SettingsDiagnosticsRouteScreen() {
               detail="Startup crash records are only kept in store and TestFlight builds."
             />
           ) : records.length === 0 ? (
-            <EmptyState
-              icon="checkmark.circle"
-              title="No startup crashes"
-              detail="Nothing has taken the app down during launch in the last 7 days."
-            />
+            <EmptyState icon="checkmark.circle" title="No startup crashes in the last 7 days" />
           ) : (
             records.map((record, index) => (
               <CrashRow key={record.timestamp} record={record} first={index === 0} />
@@ -134,7 +130,7 @@ export function SettingsDiagnosticsRouteScreen() {
 function EmptyState(props: {
   readonly icon: "exclamationmark.triangle" | "checkmark.circle";
   readonly title: string;
-  readonly detail: string;
+  readonly detail?: string;
 }) {
   return (
     <View className="items-center gap-2 px-6 py-8">
@@ -146,7 +142,9 @@ function EmptyState(props: {
         weight="regular"
       />
       <Text className="text-center text-base text-foreground">{props.title}</Text>
-      <Text className="text-center text-sm text-foreground-muted">{props.detail}</Text>
+      {props.detail ? (
+        <Text className="text-center text-sm text-foreground-muted">{props.detail}</Text>
+      ) : null}
     </View>
   );
 }

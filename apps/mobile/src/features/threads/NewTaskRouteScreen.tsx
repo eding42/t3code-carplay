@@ -333,7 +333,6 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
                 <NavigationRow
                   className="bg-grouped-card"
                   title="No project"
-                  subtitle="Start a task without a project"
                   onPress={() => void startScratch()}
                   leading={
                     <SymbolView
@@ -363,9 +362,6 @@ export function NewTaskRouteScreen({ route }: StaticScreenProps<NewTaskRoutePara
                   </View>
                   <View className="min-w-0 flex-1">
                     <Text className="text-base font-t3-bold leading-snug">No project</Text>
-                    <Text className="text-xs leading-snug text-foreground-muted" numberOfLines={1}>
-                      Start a task without a project
-                    </Text>
                   </View>
                   <SymbolView
                     name="chevron.right"

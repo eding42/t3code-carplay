@@ -193,9 +193,7 @@ export function ArchivedThreadsPanel() {
               </span>
             }
             description={
-              isLoadingArchive
-                ? "Checking connected environments."
-                : (archiveError ?? "Archived threads will appear here.")
+              isLoadingArchive ? "Checking connected environments." : (archiveError ?? undefined)
             }
           />
         </SettingsSection>

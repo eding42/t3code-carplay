@@ -111,7 +111,7 @@ export function PullRequestGuideTab({
           {failure ??
             query.error ??
             (running
-              ? "An agent is reading the change. A large one takes a few minutes. You can leave; you will be told when it is ready."
+              ? "You’ll be notified when the guide is ready."
               : "A guide is a tour of the change: stops through the code in reading order, with the calls only a maintainer can make.")}
         </p>
         {writeButton(failure === null ? "Write guide" : "Try again", "sm")}
